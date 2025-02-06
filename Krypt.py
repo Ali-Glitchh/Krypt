@@ -340,12 +340,14 @@ def index():
     """Serve the main application page."""
     return send_file('example.html')
 
-def create_app():
-    """Create the Flask application instance."""
-    return app
+# Create app instance for Vercel
+app.debug = False
+
+# Handler for Vercel serverless function
+def handler(request):
+    with app.request_context(request):
+        return app.full_dispatch_request()
 
 if __name__ == '__main__':
     logger.info(" * Starting Crypto Sentiment Analysis Server...")
-    logger.info(" * Debug mode is enabled")
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000)
