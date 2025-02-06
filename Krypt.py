@@ -340,14 +340,8 @@ def index():
     """Serve the main application page."""
     return send_file('example.html')
 
-# Create app instance for Vercel
-app.debug = False
-
-# Handler for Vercel serverless function
-def handler(request):
-    with app.request_context(request):
-        return app.full_dispatch_request()
-
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
     logger.info(" * Starting Crypto Sentiment Analysis Server...")
-    app.run(host='0.0.0.0', port=5000)
+    logger.info(f" * Server is running on port {port}")
+    app.run(host='0.0.0.0', port=port)
