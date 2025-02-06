@@ -1,10 +1,8 @@
-flask==2.0.1
-flask-cors==3.0.10
+streamlit==1.31.0
 vaderSentiment==3.3.2
-feedparser==6.0.8
-praw==7.6.0
-requests==2.26.0
-textblob==0.15.3
 pycoingecko==3.0.0
-python-dotenv==0.19.0
-gunicorn==20.1.0
+pandas==2.0.3
+plotly==5.18.0
+requests==2.31.0
+feedparser==6.0.8
+python-dotenv==1.0.0
