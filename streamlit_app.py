@@ -3,52 +3,35 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from pycoingecko import CoinGeckoAPI
 import pandas as pd
 import requests
-import feedparser
-from datetime import datetime, timedelta
+from datetime import datetime
 import plotly.graph_objects as go
 import re
-import math
 
 # Initialize APIs
-cg = CoinGeckoAPI()
-analyzer = SentimentIntensityAnalyzer()
+try:
+    cg = CoinGeckoAPI()
+    analyzer = SentimentIntensityAnalyzer()
+except Exception as e:
+    st.error(f"Error initializing APIs: {str(e)}")
 
 # Page config with theme support
 st.set_page_config(
     page_title="Crypto Sentiment Analysis",
     page_icon="🪙",
     layout="wide",
-    initial_sidebar_state="expanded"
 )
 
-# Custom CSS for dark/light mode
+# Custom CSS for dark mode
 st.markdown("""
 <style>
-[data-testid="stSidebar"] {
-    background-color: var(--secondary-background-color);
-}
 .stButton>button {
     width: 100%;
 }
+.reportview-container {
+    background: var(--secondary-background-color);
+}
 </style>
 """, unsafe_allow_html=True)
-
-# Theme selector in sidebar
-theme = st.sidebar.selectbox(
-    "Choose Theme",
-    ["Light", "Dark"],
-    key="theme_selector"
-)
-
-if theme == "Dark":
-    st.markdown("""
-        <style>
-        :root {
-            --secondary-background-color: #262730;
-            --text-color: #FAFAFA;
-        }
-        </style>
-    """, unsafe_allow_html=True)
 
 # Title and description
 st.title("🪙 Crypto Sentiment Analysis")
@@ -101,10 +84,6 @@ def analyze_sentiment(text, coin_name):
         'low': -0.5,
         'up': 0.3,
         'down': -0.3,
-        'buy': 0.4,
-        'sell': -0.4,
-        'pump': 0.6,
-        'dump': -0.6
     }
     
     base_sentiment = analyzer.polarity_scores(text)
@@ -130,10 +109,6 @@ if crypto_input and not greeting_response:
                 'solana': ['solana', 'sol'],
                 'ripple': ['ripple', 'xrp'],
                 'dogecoin': ['dogecoin', 'doge'],
-                'polkadot': ['polkadot', 'dot'],
-                'matic-network': ['polygon', 'matic'],
-                'avalanche-2': ['avalanche', 'avax'],
-                'sui': ['sui', 'sui coin', 'sui token']
             }
 
             coin_id = None
@@ -160,7 +135,7 @@ if crypto_input and not greeting_response:
                 )
 
                 # Display market data with formatted numbers
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3 = st.columns(3)
                 
                 price = market_data['market_data']['current_price']['usd']
                 price_change = market_data['market_data']['price_change_percentage_24h']
@@ -182,14 +157,6 @@ if crypto_input and not greeting_response:
                     st.metric(
                         "24h Volume", 
                         f"${format_number(volume)}"
-                    )
-                with col4:
-                    # Calculate market dominance
-                    total_market = cg.get_global()
-                    dominance = (market_cap / total_market['data']['total_market_cap']['usd']) * 100
-                    st.metric(
-                        "Market Dominance",
-                        f"{dominance:.2f}%"
                     )
 
                 # News and sentiment analysis
@@ -214,7 +181,6 @@ if crypto_input and not greeting_response:
                                     'url': item['url'],
                                     'time': datetime.fromtimestamp(item['published_on'])
                                 })
-                        
                 except Exception as e:
                     st.warning(f"Error fetching news: {str(e)}")
 
@@ -237,8 +203,7 @@ if crypto_input and not greeting_response:
                         xaxis_title="News Articles",
                         yaxis_title="Sentiment Score",
                         showlegend=False,
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        paper_bgcolor='rgba(0,0,0,0)'
+                        height=400
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -251,7 +216,7 @@ if crypto_input and not greeting_response:
                             with col2:
                                 sentiment_color = '#4ecdc4' if news['sentiment'] > 0 else '#ff6b6b'
                                 st.markdown(f"Sentiment: <span style='color:{sentiment_color}'>{news['sentiment']:.2f}</span>", unsafe_allow_html=True)
-                            st.markdown(f"Source: {news['source']} | Time: {news['time'].strftime('%Y-%m-%d %H:%M')}")
+                            st.markdown(f"Source: {news['source']} | {news['time'].strftime('%Y-%m-%d %H:%M')}")
                             st.markdown("---")
                 else:
                     st.warning("No recent news found specifically mentioning this cryptocurrency")
@@ -262,35 +227,14 @@ if crypto_input and not greeting_response:
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
 
-# Add suggestions
+# Quick access buttons
 st.sidebar.markdown("### Quick Access")
 if st.sidebar.button("Bitcoin (BTC)"):
-    st.experimental_rerun()
+    st.experimental_set_query_params(crypto="bitcoin")
 if st.sidebar.button("Ethereum (ETH)"):
-    st.experimental_rerun()
+    st.experimental_set_query_params(crypto="ethereum")
 if st.sidebar.button("Cardano (ADA)"):
-    st.experimental_rerun()
-if st.sidebar.button("Binance Coin (BNB)"):
-    st.experimental_rerun()
-
-# Add market overview
-st.sidebar.markdown("### Market Overview")
-try:
-    global_data = cg.get_global()
-    st.sidebar.metric(
-        "Total Market Cap",
-        f"${format_number(global_data['data']['total_market_cap']['usd'])}"
-    )
-    st.sidebar.metric(
-        "24h Volume",
-        f"${format_number(global_data['data']['total_volume']['usd'])}"
-    )
-    st.sidebar.metric(
-        "BTC Dominance",
-        f"{global_data['data']['market_cap_percentage']['btc']:.2f}%"
-    )
-except:
-    st.sidebar.warning("Could not fetch market overview")
+    st.experimental_set_query_params(crypto="cardano")
 
 # Footer
 st.markdown("---")
