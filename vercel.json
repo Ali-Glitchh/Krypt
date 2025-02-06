@@ -1,0 +1,33 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "Krypt.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/static/(.*)",
+            "dest": "/static/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "Krypt.py"
+        }
+    ],
+    "env": {
+        "FLASK_ENV": "production",
+        "FLASK_APP": "Krypt.py"
+    },
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                { "key": "Access-Control-Allow-Origin", "value": "*" },
+                { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
+                { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+            ]
+        }
+    ]
+}
