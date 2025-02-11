@@ -1,7 +1,7 @@
 import time
 from pycoingecko import CoinGeckoAPI
 from kucoin.client import Market
-from binance.spot import Spot
+from binance.client import Client
 import streamlit as st
 
 RATE_LIMIT_DELAY = 1.5  # seconds between API calls
@@ -20,7 +20,7 @@ class CryptoAPIs:
             self.apis['kucoin'] = Market()
             
             # Binance API
-            self.apis['binance'] = Spot()
+            self.apis['binance'] = Client(None, None)
             
             return True
         except Exception as e:
@@ -68,7 +68,7 @@ class CryptoAPIs:
         # Try Binance
         try:
             time.sleep(RATE_LIMIT_DELAY)
-            binance_markets = self.apis['binance'].ticker_24hr()
+            binance_markets = self.apis['binance'].get_ticker()
             for ticker in binance_markets:
                 if ticker['symbol'].endswith('USDT'):
                     symbol = ticker['symbol'].replace('USDT', '')
