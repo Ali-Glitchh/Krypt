@@ -55,8 +55,42 @@ st.markdown("""
     border-radius: 15px;
     font-weight: bold;
 }
+.disclaimer {
+    font-size: 0.8em;
+    color: #666;
+    font-style: italic;
+    margin: 10px 0;
+}
 </style>
 """, unsafe_allow_html=True)
+
+# Disclaimer text
+DISCLAIMER = """
+⚠️ **Investment Disclaimer:** The analysis and insights provided are for informational purposes only. 
+This is not financial advice. Cryptocurrency investments are highly volatile and risky. 
+Always conduct your own research and consult with financial professionals before making any investment decisions.
+"""
+
+def get_investment_sentiment(price_change, sentiment_score, volume_change=0):
+    # Combine different factors to generate investment sentiment
+    total_score = (
+        0.4 * sentiment_score +  # News sentiment weight
+        0.4 * (price_change / 10) +  # Price movement weight (normalized)
+        0.2 * (volume_change / 100)  # Volume change weight (normalized)
+    )
+    
+    if total_score > 0.5:
+        return "Strong Positive", "Market indicators suggest strong positive sentiment, but remember to do your own research."
+    elif total_score > 0.2:
+        return "Positive", "Market indicators are positive, but cryptocurrency markets are highly volatile."
+    elif total_score > -0.2:
+        return "Neutral", "Market indicators are mixed. Consider monitoring for clearer signals."
+    elif total_score > -0.5:
+        return "Negative", "Market indicators show some concerning signals. Exercise caution."
+    else:
+        return "Strong Negative", "Market indicators suggest strong negative sentiment. High risk environment."
+
+# Rest of your imports and setup code...
 
 # Title with custom styling
 st.markdown("""
@@ -85,43 +119,7 @@ def get_news_data(symbol):
         st.warning(f"Error fetching news: {str(e)}")
         return {'Data': []}
 
-# Sentiment analysis function
-def analyze_sentiment(text, coin_name):
-    relevant_terms = {
-        'bullish': 2.0, 'bearish': -2.0,
-        'surge': 1.5, 'plunge': -1.5,
-        'gain': 1.0, 'loss': -1.0,
-        'high': 0.5, 'low': -0.5,
-        'up': 0.3, 'down': -0.3,
-    }
-    
-    base_sentiment = analyzer.polarity_scores(text)
-    score = base_sentiment['compound']
-    
-    text_lower = text.lower()
-    for term, weight in relevant_terms.items():
-        if term in text_lower and coin_name in text_lower:
-            score += weight
-    
-    return max(min(score, 1.0), -1.0)
-
-# Number formatting
-def format_number(num):
-    if num is None:
-        return "N/A"
-    try:
-        num = float(num)
-        if abs(num) < 0.01:
-            return f"{num:.8f}"
-        if abs(num) >= 1e9:
-            return f"{num/1e9:.2f}B"
-        if abs(num) >= 1e6:
-            return f"{num/1e6:.2f}M"
-        if abs(num) >= 1e3:
-            return f"{num/1e3:.2f}K"
-        return f"{num:.2f}"
-    except:
-        return "N/A"
+# Your existing helper functions...
 
 # Load market data
 market_data = get_market_data()
@@ -130,22 +128,22 @@ market_data = get_market_data()
 mode = st.radio("Select Mode", ["Market Analysis", "Q&A"], horizontal=True)
 
 if mode == "Market Analysis":
-    # Sidebar with market overview
+    # Sidebar setup remains the same...
     st.sidebar.markdown("### 📊 Market Overview")
-
-    # Group coins by first letter for side tray
+    
+    # Group coins by first letter
     coins_by_letter = {}
     for coin in market_data:
         first_letter = coin['symbol'][0].upper()
         if first_letter not in coins_by_letter:
             coins_by_letter[first_letter] = []
         coins_by_letter[first_letter].append(coin)
-
-    # Create tabs for top coins and alphabetical list
+    
+    # Create tabs for navigation
     tab1, tab2 = st.sidebar.tabs(["🔝 Top Coins", "📑 All Coins"])
-
+    
     with tab1:
-        for coin in market_data[:15]:  # Show top 15 coins
+        for coin in market_data[:15]:
             price_change = coin.get('price_change_percentage_24h', 0)
             color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
             st.sidebar.markdown(f"""
@@ -160,125 +158,133 @@ if mode == "Market Analysis":
             </div>
             """, unsafe_allow_html=True)
             if st.sidebar.button(f"View {coin['symbol'].upper()}", key=f"btn_{coin['id']}"):
-                st.query_params['crypto'] = coin['id']
-
+                st.session_state.selected_coin = coin['id']
+    
     with tab2:
         selected_letter = st.sidebar.selectbox(
             "Select letter",
             sorted(coins_by_letter.keys())
         )
-        
         if selected_letter in coins_by_letter:
             for coin in coins_by_letter[selected_letter]:
                 if st.sidebar.button(f"{coin['symbol'].upper()} - ${format_number(coin.get('current_price'))}", key=f"alpha_{coin['id']}"):
-                    st.query_params['crypto'] = coin['id']
+                    st.session_state.selected_coin = coin['id']
 
     # Main content area
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        # Main search input with auto-complete
         crypto_input = st.text_input("🔍 Search cryptocurrency by name or symbol", "")
+        matching_coins = []
+        selected_coin = None
 
         if crypto_input:
-            # Find matching coin
             crypto_input = crypto_input.lower()
             matching_coins = [
                 coin for coin in market_data 
                 if crypto_input in coin['symbol'].lower() or crypto_input in coin['name'].lower()
             ]
-
             if matching_coins:
-                coin = matching_coins[0]
+                selected_coin = matching_coins[0]
+
+        if selected_coin:
+            # Display market metrics
+            st.markdown(f"""
+            <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+                <h2>{selected_coin['name']} ({selected_coin['symbol'].upper()})</h2>
+            </div>
+            """, unsafe_allow_html=True)
+
+            col1, col2, col3 = st.columns(3)
+            
+            price = selected_coin.get('current_price')
+            change = selected_coin.get('price_change_percentage_24h')
+            
+            with col1:
+                st.metric(
+                    "Price (USD)",
+                    f"${format_number(price)}",
+                    f"{change:+.2f}%" if change else None
+                )
                 
-                # Display market metrics in a styled container
+            with col2:
+                mcap = selected_coin.get('market_cap')
+                st.metric("Market Cap", f"${format_number(mcap)}")
+                
+            with col3:
+                vol = selected_coin.get('total_volume')
+                st.metric("24h Volume", f"${format_number(vol)}")
+
+            # Get and analyze news
+            news_data = get_news_data(selected_coin['symbol'])
+            news_items = []
+            
+            for item in news_data.get('Data', []):
+                sentiment = analyze_sentiment(f"{item['title']} {item['body']}", selected_coin['symbol'])
+                news_items.append({
+                    'title': item['title'],
+                    'source': item['source'],
+                    'sentiment': sentiment,
+                    'url': item['url'],
+                    'time': datetime.fromtimestamp(item['published_on'])
+                })
+
+            if news_items:
+                news_df = pd.DataFrame(news_items)
+                total_sentiment = news_df['sentiment'].mean()
+                
+                # Get investment sentiment
+                sentiment_status, sentiment_message = get_investment_sentiment(
+                    change or 0,
+                    total_sentiment
+                )
+                
+                sentiment_color = '#4ecdc4' if total_sentiment > 0 else '#ff6b6b'
+                
+                # Display sentiment analysis
                 st.markdown(f"""
                 <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-                    <h2>{coin['name']} ({coin['symbol'].upper()})</h2>
+                    <h3 style='margin: 0;'>Market Analysis</h3>
+                    <p>Sentiment Score: <span style='color: {sentiment_color}'>{total_sentiment:.2f}</span></p>
+                    <p>Status: {sentiment_status}</p>
+                    <p>{sentiment_message}</p>
+                    <div class='disclaimer'>{DISCLAIMER}</div>
                 </div>
                 """, unsafe_allow_html=True)
-                
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    price = coin.get('current_price')
-                    change = coin.get('price_change_percentage_24h')
-                    st.metric(
-                        "Price (USD)",
-                        f"${format_number(price)}",
-                        f"{change:+.2f}%" if change else None
-                    )
-                    
-                with col2:
-                    mcap = coin.get('market_cap')
-                    st.metric("Market Cap", f"${format_number(mcap)}")
-                    
-                with col3:
-                    vol = coin.get('total_volume')
-                    st.metric("24h Volume", f"${format_number(vol)}")
 
-                # Get and display news
-                st.markdown("### 📰 Latest News & Analysis")
-                news_data = get_news_data(coin['symbol'])
-                
-                news_items = []
-                for item in news_data.get('Data', []):
-                    sentiment = analyze_sentiment(f"{item['title']} {item['body']}", coin['symbol'])
-                    news_items.append({
-                        'title': item['title'],
-                        'source': item['source'],
-                        'sentiment': sentiment,
-                        'url': item['url'],
-                        'time': datetime.fromtimestamp(item['published_on'])
-                    })
-
-                if news_items:
-                    news_df = pd.DataFrame(news_items)
-                    total_sentiment = news_df['sentiment'].mean()
-                    sentiment_color = '#4ecdc4' if total_sentiment > 0 else '#ff6b6b'
-                    
-                    # Market sentiment score
+                # Display news
+                st.markdown("### 📰 Latest News")
+                for _, news in news_df.iterrows():
+                    sentiment_color = '#4ecdc4' if news['sentiment'] > 0 else '#ff6b6b'
                     st.markdown(f"""
-                    <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-                        <h3 style='margin: 0;'>Market Sentiment Score: <span style='color: {sentiment_color}'>{total_sentiment:.2f}</span></h3>
+                    <div class='news-container'>
+                        <h3 style='margin-top: 0;'>{news['title']}</h3>
+                        <p>
+                            <span class='sentiment-badge' style='background-color: {sentiment_color}'>
+                                Sentiment: {news['sentiment']:.2f}
+                            </span>
+                            <span style='margin-left: 10px; color: #666;'>
+                                {news['source']} | {news['time'].strftime('%Y-%m-%d %H:%M')}
+                            </span>
+                        </p>
+                        <a href='{news['url']}' target='_blank'>Read more</a>
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # News items with improved styling
-                    for _, news in news_df.iterrows():
-                        sentiment_color = '#4ecdc4' if news['sentiment'] > 0 else '#ff6b6b'
-                        st.markdown(f"""
-                        <div class='news-container'>
-                            <h3 style='margin-top: 0;'>{news['title']}</h3>
-                            <p>
-                                <span class='sentiment-badge' style='background-color: {sentiment_color}'>
-                                    Sentiment: {news['sentiment']:.2f}
-                                </span>
-                                <span style='margin-left: 10px; color: #666;'>
-                                    {news['source']} | {news['time'].strftime('%Y-%m-%d %H:%M')}
-                                </span>
-                            </p>
-                            <a href='{news['url']}' target='_blank'>Read more</a>
-                        </div>
-                        """, unsafe_allow_html=True)
-                else:
-                    st.info(f"No recent news found for {coin['symbol'].upper()}")
-
     with col2:
-        if crypto_input and matching_coins:
+        if selected_coin:
             st.markdown("### 📈 Similar Coins")
-            coin = matching_coins[0]
             similar_coins = [
                 c for c in market_data 
-                if c['id'] != coin['id'] 
-                and abs(c.get('price_change_percentage_24h', 0) - coin.get('price_change_percentage_24h', 0)) < 5
+                if c['id'] != selected_coin['id'] 
+                and abs(c.get('price_change_percentage_24h', 0) - selected_coin.get('price_change_percentage_24h', 0)) < 5
             ][:5]
             
             for similar in similar_coins:
                 price_change = similar.get('price_change_percentage_24h', 0)
                 color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
                 st.markdown(f"""
-                <div class='coin-button' onclick='window.location.href="?crypto={similar['id']}"' style='cursor: pointer;'>
+                <div class='coin-button'>
                     <div style='display: flex; justify-content: space-between; align-items: center;'>
                         <span>{similar['symbol'].upper()}</span>
                         <span style='color: {color}'>{price_change:+.2f}%</span>
@@ -326,26 +332,36 @@ else:  # Q&A Mode
                 total_sentiment = news_df['sentiment'].mean()
                 price_change = crypto_mentioned.get('price_change_percentage_24h', 0)
                 
-                # Generate analysis based on data
+                # Get investment sentiment
+                sentiment_status, sentiment_message = get_investment_sentiment(
+                    price_change,
+                    total_sentiment
+                )
+                
+                # Generate analysis
                 analysis = f"Based on recent data for {crypto_mentioned['name']} ({crypto_mentioned['symbol'].upper()}):\n\n"
                 
-                # Price analysis
+                # Market metrics
+                analysis += f"📊 Market Metrics:\n"
                 analysis += f"- Current price: ${format_number(crypto_mentioned.get('current_price'))}\n"
                 analysis += f"- 24h change: {price_change:+.2f}%\n"
                 analysis += f"- Market cap: ${format_number(crypto_mentioned.get('market_cap'))}\n\n"
                 
                 # Sentiment analysis
-                sentiment_text = "positive" if total_sentiment > 0 else "negative"
-                analysis += f"Market sentiment is {sentiment_text} with a score of {total_sentiment:.2f}\n\n"
+                analysis += f"🔍 Market Analysis:\n"
+                analysis += f"- Overall sentiment: {sentiment_status}\n"
+                analysis += f"- Sentiment score: {total_sentiment:.2f}\n"
+                analysis += f"- {sentiment_message}\n\n"
                 
-                # Recent news summary
-                analysis += "Key recent developments:\n"
+                # Recent developments
+                analysis += "📰 Recent Developments:\n"
                 for _, news in news_df.head(3).iterrows():
                     analysis += f"- {news['title']}\n"
                 
                 st.markdown(f"""
                 <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
                     <pre style='white-space: pre-wrap; font-family: inherit;'>{analysis}</pre>
+                    <div class='disclaimer'>{DISCLAIMER}</div>
                 </div>
                 """, unsafe_allow_html=True)
             else:
