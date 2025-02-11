@@ -24,14 +24,50 @@ def initialize_apis():
 
 # Cache API health check
 @st.cache_data(ttl=60)  # Cache for 1 minute
-def check_api_health(cg):
+def check_api_health(_cg):
     try:
         time.sleep(RATE_LIMIT_DELAY)
-        cg.ping()
+        _cg.ping()
         return True
     except Exception as e:
         st.error("CoinGecko API is experiencing issues. Please try again in a few minutes.")
         return False
+
+# Cache top coins data
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_top_coins(_cg):
+    retry_count = 0
+    max_retries = 3
+    while retry_count < max_retries:
+        try:
+            time.sleep(RATE_LIMIT_DELAY)
+            markets = _cg.get_coins_markets(
+                vs_currency='usd',
+                order='market_cap_desc',
+                per_page=250,
+                sparkline=False,
+                price_change_percentage='24h'
+            )
+            if markets:
+                return [
+                    {
+                        'id': coin['id'],
+                        'symbol': coin['symbol'].upper(),
+                        'name': coin['name'],
+                        'price': coin['current_price'],
+                        'market_cap': coin['market_cap'],
+                        'price_change': coin.get('price_change_percentage_24h', 0),
+                        'rank': coin['market_cap_rank']
+                    }
+                    for coin in markets
+                ]
+        except Exception as e:
+            retry_count += 1
+            if retry_count == max_retries:
+                st.error(f"Error fetching market data: {str(e)}")
+                return [{'id': 'bitcoin', 'symbol': 'BTC', 'name': 'Bitcoin', 'rank': 1}]
+            time.sleep(2)
+    return [{'id': 'bitcoin', 'symbol': 'BTC', 'name': 'Bitcoin', 'rank': 1}]
 
 # Initialize session state for API status
 if 'api_healthy' not in st.session_state:
@@ -58,11 +94,12 @@ if not cg or not analyzer:
 
 # Check API health with error handling
 @handle_api_error
-def check_api_status():
-    result = check_api_health(cg)
+def check_api_status(_cg=cg):
+    result = check_api_health(_cg)
     st.session_state.api_healthy = result
     return result
 
+# Initialize API check
 if not check_api_status():
     st.error("API is currently unavailable. Please try again later.")
     st.stop()
@@ -446,27 +483,32 @@ if crypto_input and not greeting_response:
                     coin_symbol = market_data.get('symbol', '').lower()
                     search_terms = [coin_id, coin_info, coin_symbol] + coin_patterns.get(coin_id, [])
                     search_terms = list(set([term.lower() for term in search_terms if term]))
+# Cache news data fetching
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_news_data(_coin_symbol):
+    try:
+        time.sleep(RATE_LIMIT_DELAY)  # Rate limiting
+        crypto_compare_url = f"https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories={_coin_symbol}"
+        news_response = requests.get(crypto_compare_url, timeout=10)
+        
+        if news_response.status_code == 429:  # Rate limit error
+            st.warning("News API rate limit reached. Please wait a few minutes and try again.")
+            return {'Data': []}
+        elif news_response.status_code != 200:
+            st.warning(f"News API returned status code: {news_response.status_code}")
+            return {'Data': []}
+        
+        return news_response.json()
+    except requests.Timeout:
+        st.warning("News API request timed out. Skipping news data.")
+        return {'Data': []}
+    except requests.RequestException as e:
+        st.warning(f"Error fetching news: {str(e)}")
+        return {'Data': []}
 
-                    # Fetch news with timeout and better error handling
-                    with st.spinner('Fetching news data...'):
-                        time.sleep(RATE_LIMIT_DELAY)  # Rate limiting
-                        crypto_compare_url = f"https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories={coin_symbol}"
-                        try:
-                            news_response = requests.get(crypto_compare_url, timeout=10)
-                            if news_response.status_code == 429:  # Rate limit error
-                                st.warning("News API rate limit reached. Please wait a few minutes and try again.")
-                                news_data = {'Data': []}  # Return empty data
-                            elif news_response.status_code != 200:
-                                st.warning(f"News API returned status code: {news_response.status_code}")
-                                news_data = {'Data': []}  # Return empty data
-                            else:
-                                news_data = news_response.json()
-                        except requests.Timeout:
-                            st.warning("News API request timed out. Skipping news data.")
-                            news_data = {'Data': []}  # Return empty data
-                        except requests.RequestException as e:
-                            st.warning(f"Error fetching news: {str(e)}")
-                            news_data = {'Data': []}  # Return empty data
+# Fetch news with timeout and better error handling
+with st.spinner('Fetching news data...'):
+    news_data = get_news_data(coin_symbol)
                         news_data = news_response.json()
                         for item in news_data.get('Data', []):
                             title = item.get('title', '').lower()
@@ -584,13 +626,10 @@ def get_top_coins():
 def refresh_data():
     return st.sidebar.button("🔄 Refresh Data")
 
+# Get initial or refreshed market data
 if 'all_coins' not in st.session_state or refresh_data():
     with st.spinner('Loading market data...'):
-        st.session_state.all_coins = get_top_coins()
-
-if 'all_coins' not in st.session_state or refresh_data():
-    with st.spinner('Loading market data...'):
-        st.session_state.all_coins = get_top_coins()
+        st.session_state.all_coins = get_top_coins(cg)
 
 # Add search box in sidebar
 st.sidebar.markdown("### Find Coins")
