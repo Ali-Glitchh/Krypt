@@ -15,6 +15,48 @@ def initialize_services():
     analyzer = SentimentIntensityAnalyzer()
     return crypto_apis, analyzer
 
+# Number formatting
+def format_number(num):
+    if num is None:
+        return "N/A"
+    try:
+        num = float(num)
+        if abs(num) < 0.01:
+            return f"{num:.8f}"
+        if abs(num) >= 1e9:
+            return f"{num/1e9:.2f}B"
+        if abs(num) >= 1e6:
+            return f"{num/1e6:.2f}M"
+        if abs(num) >= 1e3:
+            return f"{num/1e3:.2f}K"
+        return f"{num:.2f}"
+    except:
+        return "N/A"
+
+def get_investment_sentiment(price_change, sentiment_score, volume_change=0):
+    # Handle None values
+    price_change = float(price_change if price_change is not None else 0)
+    sentiment_score = float(sentiment_score if sentiment_score is not None else 0)
+    volume_change = float(volume_change if volume_change is not None else 0)
+    
+    # Combine different factors to generate investment sentiment
+    total_score = (
+        0.4 * sentiment_score +  # News sentiment weight
+        0.4 * (price_change / 10) +  # Price movement weight (normalized)
+        0.2 * (volume_change / 100)  # Volume change weight (normalized)
+    )
+    
+    if total_score > 0.5:
+        return "Strong Positive", "Market indicators suggest strong positive sentiment, but remember to do your own research."
+    elif total_score > 0.2:
+        return "Positive", "Market indicators are positive, but cryptocurrency markets are highly volatile."
+    elif total_score > -0.2:
+        return "Neutral", "Market indicators are mixed. Consider monitoring for clearer signals."
+    elif total_score > -0.5:
+        return "Negative", "Market indicators show some concerning signals. Exercise caution."
+    else:
+        return "Strong Negative", "Market indicators suggest strong negative sentiment. High risk environment."
+
 # Page config
 st.set_page_config(
     page_title="Krypt - Crypto News & Analysis",
@@ -71,27 +113,6 @@ This is not financial advice. Cryptocurrency investments are highly volatile and
 Always conduct your own research and consult with financial professionals before making any investment decisions.
 """
 
-def get_investment_sentiment(price_change, sentiment_score, volume_change=0):
-    # Combine different factors to generate investment sentiment
-    total_score = (
-        0.4 * sentiment_score +  # News sentiment weight
-        0.4 * (price_change / 10) +  # Price movement weight (normalized)
-        0.2 * (volume_change / 100)  # Volume change weight (normalized)
-    )
-    
-    if total_score > 0.5:
-        return "Strong Positive", "Market indicators suggest strong positive sentiment, but remember to do your own research."
-    elif total_score > 0.2:
-        return "Positive", "Market indicators are positive, but cryptocurrency markets are highly volatile."
-    elif total_score > -0.2:
-        return "Neutral", "Market indicators are mixed. Consider monitoring for clearer signals."
-    elif total_score > -0.5:
-        return "Negative", "Market indicators show some concerning signals. Exercise caution."
-    else:
-        return "Strong Negative", "Market indicators suggest strong negative sentiment. High risk environment."
-
-# Rest of your imports and setup code...
-
 # Title with custom styling
 st.markdown("""
 <h1 style='text-align: center; color: #4ecdc4; margin-bottom: 30px;'>
@@ -119,7 +140,25 @@ def get_news_data(symbol):
         st.warning(f"Error fetching news: {str(e)}")
         return {'Data': []}
 
-# Your existing helper functions...
+# Sentiment analysis function
+def analyze_sentiment(text, coin_name):
+    relevant_terms = {
+        'bullish': 2.0, 'bearish': -2.0,
+        'surge': 1.5, 'plunge': -1.5,
+        'gain': 1.0, 'loss': -1.0,
+        'high': 0.5, 'low': -0.5,
+        'up': 0.3, 'down': -0.3,
+    }
+    
+    base_sentiment = analyzer.polarity_scores(text)
+    score = base_sentiment['compound']
+    
+    text_lower = text.lower()
+    for term, weight in relevant_terms.items():
+        if term in text_lower and coin_name in text_lower:
+            score += weight
+    
+    return max(min(score, 1.0), -1.0)
 
 # Load market data
 market_data = get_market_data()
@@ -128,7 +167,7 @@ market_data = get_market_data()
 mode = st.radio("Select Mode", ["Market Analysis", "Q&A"], horizontal=True)
 
 if mode == "Market Analysis":
-    # Sidebar setup remains the same...
+    # Sidebar setup
     st.sidebar.markdown("### 📊 Market Overview")
     
     # Group coins by first letter
@@ -144,7 +183,7 @@ if mode == "Market Analysis":
     
     with tab1:
         for coin in market_data[:15]:
-            price_change = coin.get('price_change_percentage_24h', 0)
+            price_change = coin.get('price_change_percentage_24h', 0) or 0
             color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
             st.sidebar.markdown(f"""
             <div class='coin-button'>
@@ -198,7 +237,9 @@ if mode == "Market Analysis":
             col1, col2, col3 = st.columns(3)
             
             price = selected_coin.get('current_price')
-            change = selected_coin.get('price_change_percentage_24h')
+            change = selected_coin.get('price_change_percentage_24h', 0)
+            if change is None:
+                change = 0
             
             with col1:
                 st.metric(
@@ -235,7 +276,7 @@ if mode == "Market Analysis":
                 
                 # Get investment sentiment
                 sentiment_status, sentiment_message = get_investment_sentiment(
-                    change or 0,
+                    change,
                     total_sentiment
                 )
                 
@@ -270,30 +311,35 @@ if mode == "Market Analysis":
                         <a href='{news['url']}' target='_blank'>Read more</a>
                     </div>
                     """, unsafe_allow_html=True)
+            else:
+                st.info(f"No recent news found for {selected_coin['symbol'].upper()}")
 
     with col2:
         if selected_coin:
             st.markdown("### 📈 Similar Coins")
-            similar_coins = [
-                c for c in market_data 
-                if c['id'] != selected_coin['id'] 
-                and abs(c.get('price_change_percentage_24h', 0) - selected_coin.get('price_change_percentage_24h', 0)) < 5
-            ][:5]
-            
-            for similar in similar_coins:
-                price_change = similar.get('price_change_percentage_24h', 0)
-                color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
-                st.markdown(f"""
-                <div class='coin-button'>
-                    <div style='display: flex; justify-content: space-between; align-items: center;'>
-                        <span>{similar['symbol'].upper()}</span>
-                        <span style='color: {color}'>{price_change:+.2f}%</span>
+            try:
+                similar_coins = [
+                    c for c in market_data 
+                    if c['id'] != selected_coin['id'] 
+                    and abs((c.get('price_change_percentage_24h', 0) or 0) - (selected_coin.get('price_change_percentage_24h', 0) or 0)) < 5
+                ][:5]
+                
+                for similar in similar_coins:
+                    price_change = similar.get('price_change_percentage_24h', 0) or 0
+                    color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
+                    st.markdown(f"""
+                    <div class='coin-button'>
+                        <div style='display: flex; justify-content: space-between; align-items: center;'>
+                            <span>{similar['symbol'].upper()}</span>
+                            <span style='color: {color}'>{price_change:+.2f}%</span>
+                        </div>
+                        <div style='font-size: 0.8em; color: #666;'>
+                            ${format_number(similar.get('current_price'))}
+                        </div>
                     </div>
-                    <div style='font-size: 0.8em; color: #666;'>
-                        ${format_number(similar.get('current_price'))}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
+            except Exception as e:
+                st.warning("Error loading similar coins")
 
 else:  # Q&A Mode
     st.markdown("### 💬 Crypto Q&A")
@@ -330,7 +376,7 @@ else:  # Q&A Mode
             if news_items:
                 news_df = pd.DataFrame(news_items)
                 total_sentiment = news_df['sentiment'].mean()
-                price_change = crypto_mentioned.get('price_change_percentage_24h', 0)
+                price_change = crypto_mentioned.get('price_change_percentage_24h', 0) or 0
                 
                 # Get investment sentiment
                 sentiment_status, sentiment_message = get_investment_sentiment(
