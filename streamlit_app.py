@@ -8,12 +8,64 @@ from datetime import datetime
 import plotly.graph_objects as go
 import re
 
-# Initialize APIs
-try:
-    cg = CoinGeckoAPI()
-    analyzer = SentimentIntensityAnalyzer()
-except Exception as e:
-    st.error(f"Error initializing APIs: {str(e)}")
+# Add rate limiting delay
+RATE_LIMIT_DELAY = 1.5  # seconds between API calls
+
+# Initialize APIs with better error handling and rate limiting
+@st.cache_resource
+def initialize_apis():
+    try:
+        cg = CoinGeckoAPI()
+        analyzer = SentimentIntensityAnalyzer()
+        return cg, analyzer
+    except Exception as e:
+        st.error(f"Failed to initialize APIs: {str(e)}")
+        return None, None
+
+# Cache API health check
+@st.cache_data(ttl=60)  # Cache for 1 minute
+def check_api_health(cg):
+    try:
+        time.sleep(RATE_LIMIT_DELAY)
+        cg.ping()
+        return True
+    except Exception as e:
+        st.error("CoinGecko API is experiencing issues. Please try again in a few minutes.")
+        return False
+
+# Initialize session state for API status
+if 'api_healthy' not in st.session_state:
+    st.session_state.api_healthy = False
+
+# Custom error handler
+def handle_api_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            st.error(f"API Error: {str(e)}")
+            if "rate limit" in str(e).lower():
+                st.warning("Rate limit reached. Please wait a few minutes before trying again.")
+            elif "timeout" in str(e).lower():
+                st.warning("Request timed out. The server might be busy.")
+            return None
+    return wrapper
+
+cg, analyzer = initialize_apis()
+if not cg or not analyzer:
+    st.error("Failed to initialize APIs. Please refresh the page.")
+    st.stop()
+
+# Check API health with error handling
+@handle_api_error
+def check_api_status():
+    result = check_api_health(cg)
+    st.session_state.api_healthy = result
+    return result
+
+if not check_api_status():
+    st.error("API is currently unavailable. Please try again later.")
+    st.stop()
 
 # Custom Kratos coin favicon (Base64 encoded)
 KRATOS_ICON = """
@@ -288,22 +340,26 @@ if crypto_input and not greeting_response:
                     st.error(f"Error searching for coin: {str(e)}")
 
             if coin_id:
-                # Get fresh market data with retry mechanism
+                # Get fresh market data with retry mechanism and rate limiting
                 retry_count = 0
                 max_retries = 3
                 market_data = {}
 
                 while retry_count < max_retries:
                     try:
-                        # Try to get data from markets endpoint first (more reliable for prices)
-                        markets = cg.get_coins_markets(
-                            vs_currency='usd',
-                            ids=[coin_id],
-                            order='market_cap_desc',
-                            per_page=1,
-                            sparkline=False,
-                            price_change_percentage='24h'
-                        )
+                        with st.spinner('Fetching market data...'):
+                            # Add rate limiting delay
+                            time.sleep(RATE_LIMIT_DELAY)
+                            
+                            # Try to get data from markets endpoint first (more reliable for prices)
+                            markets = cg.get_coins_markets(
+                                vs_currency='usd',
+                                ids=[coin_id],
+                                order='market_cap_desc',
+                                per_page=1,
+                                sparkline=False,
+                                price_change_percentage='24h'
+                            )
 
                         if markets and len(markets) > 0:
                                                     market = markets[0]
@@ -391,10 +447,26 @@ if crypto_input and not greeting_response:
                     search_terms = [coin_id, coin_info, coin_symbol] + coin_patterns.get(coin_id, [])
                     search_terms = list(set([term.lower() for term in search_terms if term]))
 
-                    # Fetch news from multiple sources if needed
-                    crypto_compare_url = f"https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories={coin_symbol}"
-                    news_response = requests.get(crypto_compare_url, timeout=5)
-                    if news_response.status_code == 200:
+                    # Fetch news with timeout and better error handling
+                    with st.spinner('Fetching news data...'):
+                        time.sleep(RATE_LIMIT_DELAY)  # Rate limiting
+                        crypto_compare_url = f"https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories={coin_symbol}"
+                        try:
+                            news_response = requests.get(crypto_compare_url, timeout=10)
+                            if news_response.status_code == 429:  # Rate limit error
+                                st.warning("News API rate limit reached. Please wait a few minutes and try again.")
+                                news_data = {'Data': []}  # Return empty data
+                            elif news_response.status_code != 200:
+                                st.warning(f"News API returned status code: {news_response.status_code}")
+                                news_data = {'Data': []}  # Return empty data
+                            else:
+                                news_data = news_response.json()
+                        except requests.Timeout:
+                            st.warning("News API request timed out. Skipping news data.")
+                            news_data = {'Data': []}  # Return empty data
+                        except requests.RequestException as e:
+                            st.warning(f"Error fetching news: {str(e)}")
+                            news_data = {'Data': []}  # Return empty data
                         news_data = news_response.json()
                         for item in news_data.get('Data', []):
                             title = item.get('title', '').lower()
@@ -472,16 +544,53 @@ if crypto_input and not greeting_response:
 # Quick access buttons with dynamic top coins
 st.sidebar.markdown("### Quick Access")
 
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_top_coins():
+    retry_count = 0
+    max_retries = 3
+    while retry_count < max_retries:
+        try:
+            time.sleep(RATE_LIMIT_DELAY)
+            markets = cg.get_coins_markets(
+                vs_currency='usd',
+                order='market_cap_desc',
+                per_page=250,
+                sparkline=False,
+                price_change_percentage='24h'
+            )
+            if markets:
+                return [
+                    {
+                        'id': coin['id'],
+                        'symbol': coin['symbol'].upper(),
+                        'name': coin['name'],
+                        'price': coin['current_price'],
+                        'market_cap': coin['market_cap'],
+                        'price_change': coin.get('price_change_percentage_24h', 0),
+                        'rank': coin['market_cap_rank']
+                    }
+                    for coin in markets
+                ]
+        except Exception as e:
+            retry_count += 1
+            if retry_count == max_retries:
+                st.error(f"Error fetching market data: {str(e)}")
+                return [{'id': 'bitcoin', 'symbol': 'BTC', 'name': 'Bitcoin', 'rank': 1}]
+            time.sleep(2)
+    return [{'id': 'bitcoin', 'symbol': 'BTC', 'name': 'Bitcoin', 'rank': 1}]
+
 # Get all coins market data if not in session state
+@st.cache_data(ttl=60)  # Refresh button cache
+def refresh_data():
+    return st.sidebar.button("🔄 Refresh Data")
+
+if 'all_coins' not in st.session_state or refresh_data():
+    with st.spinner('Loading market data...'):
+        st.session_state.all_coins = get_top_coins()
+
 if 'all_coins' not in st.session_state or st.sidebar.button("🔄 Refresh Data"):
-    try:
-        markets = cg.get_coins_markets(
-            vs_currency='usd',
-            order='market_cap_desc',
-            per_page=250,  # Get more coins
-            sparkline=False,
-            price_change_percentage='24h'
-        )
+    with st.spinner('Loading market data...'):
+        markets = fetch_all_coins(cg)
         st.session_state.all_coins = [
             {
                 'id': coin['id'],
