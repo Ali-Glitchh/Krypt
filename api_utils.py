@@ -1,7 +1,6 @@
 import time
 from pycoingecko import CoinGeckoAPI
 from kucoin.client import Market
-from binance.client import Client
 import streamlit as st
 
 RATE_LIMIT_DELAY = 1.5  # seconds between API calls
@@ -18,9 +17,6 @@ class CryptoAPIs:
             
             # KuCoin API
             self.apis['kucoin'] = Market()
-            
-            # Binance API
-            self.apis['binance'] = Client(None, None)
             
             return True
         except Exception as e:
@@ -52,37 +48,24 @@ class CryptoAPIs:
             if kucoin_markets and 'ticker' in kucoin_markets:
                 for ticker in kucoin_markets['ticker']:
                     if ticker['symbol'].endswith('USDT'):
-                        symbol = ticker['symbol'].replace('-USDT', '')
-                        all_markets.append({
-                            'id': symbol.lower(),
-                            'symbol': symbol,
-                            'name': symbol,
-                            'current_price': float(ticker['last']),
-                            'price_change_percentage_24h': float(ticker['changeRate']) * 100,
-                            'market_cap': float(ticker['vol']) * float(ticker['last']),
-                            'total_volume': float(ticker['vol'])
-                        })
+                        try:
+                            last_price = float(ticker.get('last', 0))
+                            volume = float(ticker.get('vol', 0))
+                            if last_price and volume:  # Only add if valid numbers
+                                symbol = ticker['symbol'].replace('-USDT', '')
+                                all_markets.append({
+                                    'id': symbol.lower(),
+                                    'symbol': symbol,
+                                    'name': symbol,
+                                    'current_price': last_price,
+                                    'price_change_percentage_24h': float(ticker.get('changeRate', 0)) * 100,
+                                    'market_cap': volume * last_price,
+                                    'total_volume': volume
+                                })
+                        except (TypeError, ValueError) as e:
+                            continue  # Skip this ticker if number conversion fails
         except Exception as e:
             st.warning(f"KuCoin API error: {str(e)}")
-
-        # Try Binance
-        try:
-            time.sleep(RATE_LIMIT_DELAY)
-            binance_markets = self.apis['binance'].get_ticker()
-            for ticker in binance_markets:
-                if ticker['symbol'].endswith('USDT'):
-                    symbol = ticker['symbol'].replace('USDT', '')
-                    all_markets.append({
-                        'id': symbol.lower(),
-                        'symbol': symbol,
-                        'name': symbol,
-                        'current_price': float(ticker['lastPrice']),
-                        'price_change_percentage_24h': float(ticker['priceChangePercent']),
-                        'market_cap': float(ticker['volume']) * float(ticker['lastPrice']),
-                        'total_volume': float(ticker['volume'])
-                    })
-        except Exception as e:
-            st.warning(f"Binance API error: {str(e)}")
 
         # Deduplicate and sort by market cap
         if all_markets:
@@ -97,18 +80,15 @@ class CryptoAPIs:
         return []
 
     def get_coin_price(self, coin_id):
-        for api_name, api in self.apis.items():
-            try:
-                time.sleep(RATE_LIMIT_DELAY)
-                if api_name == 'coingecko':
-                    markets = api.get_coins_markets(
-                        vs_currency='usd',
-                        ids=[coin_id],
-                        per_page=1
-                    )
-                    if markets:
-                        return markets[0]
-            except Exception as e:
-                st.warning(f"{api_name} API error: {str(e)}")
-                continue
+        try:
+            time.sleep(RATE_LIMIT_DELAY)
+            markets = self.apis['coingecko'].get_coins_markets(
+                vs_currency='usd',
+                ids=[coin_id],
+                per_page=1
+            )
+            if markets:
+                return markets[0]
+        except Exception as e:
+            st.warning(f"CoinGecko API error: {str(e)}")
         return None
