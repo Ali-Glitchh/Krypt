@@ -588,26 +588,9 @@ if 'all_coins' not in st.session_state or refresh_data():
     with st.spinner('Loading market data...'):
         st.session_state.all_coins = get_top_coins()
 
-if 'all_coins' not in st.session_state or st.sidebar.button("🔄 Refresh Data"):
+if 'all_coins' not in st.session_state or refresh_data():
     with st.spinner('Loading market data...'):
-        markets = fetch_all_coins(cg)
-        st.session_state.all_coins = [
-            {
-                'id': coin['id'],
-                'symbol': coin['symbol'].upper(),
-                'name': coin['name'],
-                'price': coin['current_price'],
-                'market_cap': coin['market_cap'],
-                'price_change': coin.get('price_change_percentage_24h', 0),
-                'rank': coin['market_cap_rank']
-            }
-            for coin in markets
-        ]
-    except Exception as e:
-        st.error(f"Error fetching coins: {str(e)}")
-        st.session_state.all_coins = [
-            {'id': 'bitcoin', 'symbol': 'BTC', 'name': 'Bitcoin', 'rank': 1}
-        ]
+        st.session_state.all_coins = get_top_coins()
 
 # Add search box in sidebar
 st.sidebar.markdown("### Find Coins")
