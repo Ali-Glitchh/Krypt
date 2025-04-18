@@ -178,9 +178,34 @@ for coin in market_data:
     coins_by_letter[first_letter].append(coin)  # Append the coin to the correct list
 
 # Create tabs for navigation
-tab1, tab2 = st.sidebar.tabs(["🔝 Top Coins", "📑 All Coins"])
+tab1, tab2, tab3 = st.sidebar.tabs(["🏠 Main", "🔝 Top Coins", "📑 All Coins"])
 
 with tab1:
+    st.sidebar.markdown("### Latest Updates")
+    st.sidebar.info("Welcome to Krypt - Get real-time cryptocurrency analysis and news.")
+    
+    # Show featured coins in main tab
+    st.sidebar.markdown("### Featured Coins")
+    featured_coins = market_data[:5] if len(market_data) >= 5 else market_data
+    
+    for coin in featured_coins:
+        price_change = coin.get('price_change_percentage_24h', 0)
+        color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
+        st.sidebar.markdown(f"""
+        <div class='coin-button'>
+            <div style='display: flex; justify-content: space-between; align-items: center;'>
+                <span>#{coin.get('market_cap_rank', '?')} {coin['symbol'].upper()}</span>
+                <span style='color: {color}'>{price_change:+.2f}%</span>
+            </div>
+            <div style='font-size: 0.8em; color: #666;'>
+                ${format_number(coin.get('current_price'))}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.sidebar.button(f"View {coin['symbol'].upper()}", key=f"main_{coin['id']}"):
+            st.session_state.selected_coin = coin['id']
+
+with tab2:
     for coin in market_data[:15]:
         price_change = coin.get('price_change_percentage_24h', 0)
         color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
@@ -198,7 +223,7 @@ with tab1:
         if st.sidebar.button(f"View {coin['symbol'].upper()}", key=f"btn_{coin['id']}"):
             st.session_state.selected_coin = coin['id']
 
-with tab2:
+with tab3:
     selected_letter = st.sidebar.selectbox(
         "Select letter",
         sorted(coins_by_letter.keys())
