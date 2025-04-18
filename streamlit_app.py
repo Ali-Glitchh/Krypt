@@ -72,13 +72,12 @@ Always conduct your own research and consult with financial professionals before
 """
 
 def get_investment_sentiment(price_change, sentiment_score, volume_change=0):
-    # Combine different factors to generate investment sentiment
     total_score = (
-        0.4 * sentiment_score +  # News sentiment weight
-        0.4 * (price_change / 10) +  # Price movement weight (normalized)
-        0.2 * (volume_change / 100)  # Volume change weight (normalized)
+        0.4 * sentiment_score +
+        0.4 * (price_change / 10) +
+        0.2 * (volume_change / 100)
     )
-    
+
     if total_score > 0.5:
         return "Strong Positive", "Market indicators suggest strong positive sentiment, but remember to do your own research."
     elif total_score > 0.2:
@@ -90,7 +89,52 @@ def get_investment_sentiment(price_change, sentiment_score, volume_change=0):
     else:
         return "Strong Negative", "Market indicators suggest strong negative sentiment. High risk environment."
 
-# Rest of your imports and setup code...
+# Format numbers with appropriate precision
+def format_number(num):
+    if num is None:
+        return "N/A"
+    try:
+        num = float(num)
+        if 0 < abs(num) < 0.0001:  # Adjusted threshold for very small values
+            return f"{num:.10f}"  # Increased precision for very small values
+        if 0 < abs(num) < 0.01:
+            return f"{num:.8f}"
+        if num == 0:
+            return "0.00"
+        if num >= 1e12:
+            return f"{num/1e12:.2f}T"
+        elif num >= 1e9:
+            return f"{num/1e9:.2f}B"
+        elif num >= 1e6:
+            return f"{num/1e6:.2f}M"
+        elif num >= 1e3:
+            return f"{num/1e3:.2f}K"
+        else:
+            return f"{num:.2f}"
+    except (TypeError, ValueError):
+        return "N/A"
+
+# Analyze sentiment of text related to a cryptocurrency
+def analyze_sentiment(text, coin_name):
+    relevant_terms = {
+        'bullish': 2.0,
+        'bearish': -2.0,
+        'surge': 1.5,
+        'plunge': -1.5,
+        'gain': 1.0,
+        'loss': -1.0,
+        'high': 0.5,
+        'low': -0.5,
+        'up': 0.3,
+        'down': -0.3,
+    }
+    base_sentiment = analyzer.polarity_scores(text)
+    score = base_sentiment['compound']
+    text_lower = text.lower()
+    for term, weight in relevant_terms.items():
+        if term in text_lower and coin_name in text_lower:
+            score += weight
+    return max(min(score, 1.0), -1.0)
 
 # Title with custom styling
 st.markdown("""
@@ -119,8 +163,6 @@ def get_news_data(symbol):
         st.warning(f"Error fetching news: {str(e)}")
         return {'Data': []}
 
-# Your existing helper functions...
-
 # Load market data
 market_data = get_market_data()
 
@@ -128,7 +170,7 @@ market_data = get_market_data()
 mode = st.radio("Select Mode", ["Market Analysis", "Q&A"], horizontal=True)
 
 if mode == "Market Analysis":
-    # Sidebar setup remains the same...
+    # Sidebar setup
     st.sidebar.markdown("### 📊 Market Overview")
     
     # Group coins by first letter
@@ -136,8 +178,8 @@ if mode == "Market Analysis":
     for coin in market_data:
         first_letter = coin['symbol'][0].upper()
         if first_letter not in coins_by_letter:
-            coins_by_letter[first_letter] = []
-        coins_by_letter[first_letter].append(coin)
+            coins_by_letter[first_letter] = []  # Correctly initialize a list for the first letter
+        coins_by_letter[first_letter].append(coin)  # Append the coin to the correct list
     
     # Create tabs for navigation
     tab1, tab2 = st.sidebar.tabs(["🔝 Top Coins", "📑 All Coins"])
@@ -295,7 +337,7 @@ if mode == "Market Analysis":
                 </div>
                 """, unsafe_allow_html=True)
 
-else:  # Q&A Mode
+elif mode == "Q&A":
     st.markdown("### 💬 Crypto Q&A")
     st.markdown("""
     Ask questions about cryptocurrencies like:
@@ -303,18 +345,25 @@ else:  # Q&A Mode
     - How is Ethereum performing?
     - Analysis of recent market trends
     """)
-    
+
     question = st.text_input("Ask your question:")
     if question:
         crypto_mentioned = None
         question_lower = question.lower()
-        
+
+        # Predefined knowledge about popular cryptocurrencies
+        crypto_knowledge = {
+            "bitcoin": "Bitcoin is the first decentralized cryptocurrency, created in 2009 by an unknown person or group using the pseudonym Satoshi Nakamoto. It is often referred to as digital gold.",
+            "ethereum": "Ethereum is a decentralized platform that enables smart contracts and decentralized applications (DApps) to be built and run without any downtime, fraud, or control.",
+            "dogecoin": "Dogecoin started as a joke based on a popular internet meme but has since gained a large community and is often used for tipping and charitable donations.",
+        }
+
         # Try to identify which cryptocurrency is being asked about
         for coin in market_data:
             if coin['symbol'].lower() in question_lower or coin['name'].lower() in question_lower:
                 crypto_mentioned = coin
                 break
-        
+
         if crypto_mentioned:
             # Get news and sentiment for the mentioned crypto
             news_data = get_news_data(crypto_mentioned['symbol'])
@@ -326,48 +375,56 @@ else:  # Q&A Mode
                     'sentiment': sentiment,
                     'time': datetime.fromtimestamp(item['published_on'])
                 })
-            
+
             if news_items:
                 news_df = pd.DataFrame(news_items)
                 total_sentiment = news_df['sentiment'].mean()
                 price_change = crypto_mentioned.get('price_change_percentage_24h', 0)
-                
+
                 # Get investment sentiment
                 sentiment_status, sentiment_message = get_investment_sentiment(
                     price_change,
                     total_sentiment
                 )
-                
-                # Generate analysis
-                analysis = f"Based on recent data for {crypto_mentioned['name']} ({crypto_mentioned['symbol'].upper()}):\n\n"
-                
-                # Market metrics
-                analysis += f"📊 Market Metrics:\n"
-                analysis += f"- Current price: ${format_number(crypto_mentioned.get('current_price'))}\n"
-                analysis += f"- 24h change: {price_change:+.2f}%\n"
-                analysis += f"- Market cap: ${format_number(crypto_mentioned.get('market_cap'))}\n\n"
-                
-                # Sentiment analysis
-                analysis += f"🔍 Market Analysis:\n"
-                analysis += f"- Overall sentiment: {sentiment_status}\n"
-                analysis += f"- Sentiment score: {total_sentiment:.2f}\n"
-                analysis += f"- {sentiment_message}\n\n"
-                
-                # Recent developments
-                analysis += "📰 Recent Developments:\n"
+
+                # Generate conversational response
+                response = f"Hi there! Here's what I found about {crypto_mentioned['name']} ({crypto_mentioned['symbol'].upper()}):\n\n"
+                response += f"📊 Market Metrics:\n"
+                response += f"- Current price: ${format_number(crypto_mentioned.get('current_price'))}\n"
+                response += f"- 24h change: {price_change:+.2f}%\n"
+                response += f"- Market cap: ${format_number(crypto_mentioned.get('market_cap'))}\n\n"
+
+                response += f"🔍 Market Analysis:\n"
+                response += f"- Overall sentiment: {sentiment_status}\n"
+                response += f"- Sentiment score: {total_sentiment:.2f}\n"
+                response += f"- {sentiment_message}\n\n"
+
+                response += "📰 Recent Developments:\n"
                 for _, news in news_df.head(3).iterrows():
-                    analysis += f"- {news['title']}\n"
-                
+                    response += f"- {news['title']}\n"
+
                 st.markdown(f"""
                 <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-                    <pre style='white-space: pre-wrap; font-family: inherit;'>{analysis}</pre>
+                    <pre style='white-space: pre-wrap; font-family: inherit;'>{response}</pre>
                     <div class='disclaimer'>{DISCLAIMER}</div>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.info(f"No recent news found for {crypto_mentioned['symbol'].upper()}")
+                st.info(f"I couldn't find any recent news about {crypto_mentioned['symbol'].upper()}, but feel free to ask another question!")
         else:
-            st.warning("Please mention a specific cryptocurrency in your question for detailed analysis.")
+            # Check if the question is about general crypto knowledge
+            for key, value in crypto_knowledge.items():
+                if key in question_lower:
+                    st.markdown(f"""
+                    <div style='background-color: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+                        <p>{value}</p>
+                        <div class='disclaimer'>{DISCLAIMER}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    break
+            else:
+                # Fallback response for unrecognized questions
+                st.warning("I'm not sure about that. Could you rephrase or ask about a specific cryptocurrency? For example, try asking about Bitcoin or Ethereum.")
 
 # Footer
 st.markdown("---")
