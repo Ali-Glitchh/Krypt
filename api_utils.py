@@ -1,15 +1,19 @@
 import time
 from pycoingecko import CoinGeckoAPI
 from kucoin.client import Market
-import streamlit as st
+import logging
 
 RATE_LIMIT_DELAY = 1.5  # seconds between API calls
+
+# Set up logger for non-Streamlit environments
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class CryptoAPIs:
     def __init__(self):
         self.apis = {}
         self.initialize_apis()
-
+    
     def initialize_apis(self):
         try:
             # CoinGecko API
@@ -20,7 +24,7 @@ class CryptoAPIs:
             
             return True
         except Exception as e:
-            st.error(f"Error initializing APIs: {str(e)}")
+            logger.error(f"Error initializing APIs: {str(e)}")
             return False
 
     def get_markets_data(self):
@@ -39,7 +43,7 @@ class CryptoAPIs:
             if markets:
                 all_markets.extend(markets)
         except Exception as e:
-            st.warning(f"CoinGecko API error: {str(e)}")
+            logger.warning(f"CoinGecko API error: {str(e)}")
 
         # Try KuCoin
         try:
@@ -65,7 +69,7 @@ class CryptoAPIs:
                         except (TypeError, ValueError) as e:
                             continue  # Skip this ticker if number conversion fails
         except Exception as e:
-            st.warning(f"KuCoin API error: {str(e)}")
+            logger.warning(f"KuCoin API error: {str(e)}")
 
         # Deduplicate and sort by market cap
         if all_markets:
@@ -90,5 +94,5 @@ class CryptoAPIs:
             if markets:
                 return markets[0]
         except Exception as e:
-            st.warning(f"CoinGecko API error: {str(e)}")
+            logger.warning(f"CoinGecko API error: {str(e)}")
         return None

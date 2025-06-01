@@ -7,6 +7,7 @@ from datetime import datetime
 import plotly.graph_objects as go
 import re
 from api_utils import CryptoAPIs, RATE_LIMIT_DELAY
+from crypto_chatbot import chatbot
 
 # Initialize APIs and Sentiment Analyzer
 @st.cache_resource
@@ -143,6 +144,16 @@ st.markdown("""
 </h1>
 """, unsafe_allow_html=True)
 
+# Initialize chat history in session state
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = [
+        {
+            'role': 'assistant',
+            'message': '👋 Welcome to Krypt! I\'m your AI crypto assistant. Ask me about prices, analysis, or just say hi!',
+            'timestamp': datetime.now()
+        }
+    ]
+
 # Cache market data
 @st.cache_data(ttl=300)  # Cache for 5 minutes
 def get_market_data():
@@ -183,13 +194,12 @@ tab1, tab2, tab3 = st.sidebar.tabs(["🏠 Main", "🔝 Top Coins", "📑 All Coi
 with tab1:
     st.sidebar.markdown("### Latest Updates")
     st.sidebar.info("Welcome to Krypt - Get real-time cryptocurrency analysis and news.")
-    
-    # Show featured coins in main tab
+      # Show featured coins in main tab
     st.sidebar.markdown("### Featured Coins")
     featured_coins = market_data[:5] if len(market_data) >= 5 else market_data
     
     for coin in featured_coins:
-        price_change = coin.get('price_change_percentage_24h', 0)
+        price_change = coin.get('price_change_percentage_24h', 0) or 0
         color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
         st.sidebar.markdown(f"""
         <div class='coin-button'>
@@ -207,7 +217,7 @@ with tab1:
 
 with tab2:
     for coin in market_data[:15]:
-        price_change = coin.get('price_change_percentage_24h', 0)
+        price_change = coin.get('price_change_percentage_24h', 0) or 0
         color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
         st.sidebar.markdown(f"""
         <div class='coin-button'>
@@ -237,18 +247,84 @@ with tab3:
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    crypto_input = st.text_input("🔍 Search cryptocurrency by name or symbol", "")
+    st.markdown("### 🤖 AI Assistant & Crypto Search")
+    crypto_input = st.text_input("💬 Ask me anything about crypto or search for a coin", "", placeholder="Try: 'hi', 'bitcoin price', 'what is ethereum'")
+    
     matching_coins = []
     selected_coin = None
-
+      # AI Chatbot Integration
     if crypto_input:
-        crypto_input = crypto_input.lower()
-        matching_coins = [
-            coin for coin in market_data 
-            if crypto_input in coin['symbol'].lower() or crypto_input in coin['name'].lower()
-        ]
-        if matching_coins:
-            selected_coin = matching_coins[0]
+        # Add user message to chat history
+        st.session_state.chat_history.append({
+            'role': 'user',
+            'message': crypto_input,
+            'timestamp': datetime.now()
+        })
+        
+        # Get AI response
+        ai_response = chatbot.generate_response(crypto_input, market_data)
+        
+        # Add AI response to chat history
+        st.session_state.chat_history.append({
+            'role': 'assistant',
+            'message': ai_response['message'],
+            'type': ai_response['type'],
+            'timestamp': datetime.now()
+        })
+        
+        # Handle specific actions
+        if ai_response['type'] == 'crypto_info':
+            selected_coin = ai_response['coin_data']
+    
+    # Display chat history
+    if len(st.session_state.chat_history) > 1:  # More than just welcome message
+        st.markdown("### 💬 Chat History")
+        chat_container = st.container()
+        with chat_container:
+            for i, chat in enumerate(st.session_state.chat_history[-6:]):  # Show last 6 messages
+                if chat['role'] == 'user':
+                    st.markdown(f"""
+                    <div style='background-color: #0e1117; padding: 10px; border-radius: 10px; margin: 5px 0; border-left: 3px solid #4ecdc4;'>
+                        <strong>👤 You:</strong> {chat['message']}
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    # Color code based on response type
+                    color = {
+                        'greeting': '#4ecdc4',
+                        'crypto_info': '#00ff00',
+                        'crypto_not_found': '#ff6b6b',
+                        'farewell': '#4ecdc4'
+                    }.get(chat.get('type', 'general'), '#4ecdc4')
+                    
+                    st.markdown(f"""
+                    <div style='background-color: #1e1e1e; padding: 10px; border-radius: 10px; margin: 5px 0; border-left: 3px solid {color};'>
+                        <strong>🤖 Krypt AI:</strong> {chat['message']}
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # Clear chat button
+        if st.button("🗑️ Clear Chat History"):
+            st.session_state.chat_history = [st.session_state.chat_history[0]]  # Keep welcome message
+            st.experimental_rerun()
+          # Fallback to original search if no AI match
+        if not selected_coin and len(crypto_input) > 2:
+            crypto_input_clean = crypto_input.lower().strip()
+            
+            # Avoid searching if it's clearly a greeting
+            greeting_words = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening']
+            if crypto_input_clean not in greeting_words:
+                matching_coins = [
+                    coin for coin in market_data 
+                    if (crypto_input_clean == coin['symbol'].lower() or 
+                        crypto_input_clean == coin['name'].lower() or
+                        crypto_input_clean == coin['id'].lower() or
+                        (len(crypto_input_clean) > 4 and 
+                         crypto_input_clean in coin['name'].lower() and
+                         len(coin['name']) - len(crypto_input_clean) <= 3))  # More restrictive substring matching
+                ]
+                if matching_coins:
+                    selected_coin = matching_coins[0]
 
     if selected_coin:
         # Display market metrics
@@ -261,7 +337,7 @@ with col1:
         col1, col2, col3 = st.columns(3)
         
         price = selected_coin.get('current_price')
-        change = selected_coin.get('price_change_percentage_24h')
+        change = selected_coin.get('price_change_percentage_24h', 0) or 0
         
         with col1:
             st.metric(
@@ -340,11 +416,10 @@ with col2:
         similar_coins = [
             c for c in market_data 
             if c['id'] != selected_coin['id'] 
-            and abs(c.get('price_change_percentage_24h', 0) - selected_coin.get('price_change_percentage_24h', 0)) < 5
-        ][:5]
+            and abs((c.get('price_change_percentage_24h', 0) or 0) - (selected_coin.get('price_change_percentage_24h', 0) or 0)) < 5        ][:5]
         
         for similar in similar_coins:
-            price_change = similar.get('price_change_percentage_24h', 0)
+            price_change = similar.get('price_change_percentage_24h', 0) or 0
             color = '#4ecdc4' if price_change >= 0 else '#ff6b6b'
             st.markdown(f"""
             <div class='coin-button'>
