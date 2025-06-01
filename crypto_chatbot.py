@@ -70,37 +70,19 @@ class CryptoChatbot:
             'farewells': ['bye', 'goodbye', 'see you', 'thanks', 'thank you'],
             'crypto_keywords': ['price', 'buy', 'sell', 'invest', 'analysis', 'chart', 'market', 'crypto', 'bitcoin', 'ethereum'],            'help_keywords': ['help', 'how', 'what', 'explain', 'tell me'],
             'price_keywords': ['price', 'cost', 'value', 'worth', 'current', 'latest'],
-            'trend_keywords': ['trend', 'analysis', 'forecast', 'prediction', 'outlook'],
-            'comparison_keywords': ['compare', 'vs', 'versus', 'difference', 'better']
+            'trend_keywords': ['trend', 'analysis', 'forecast', 'prediction', 'outlook'],            'comparison_keywords': ['compare', 'vs', 'versus', 'difference', 'better']
         }
 
     def _load_chat_dataset(self):
-        """Load both crypto chat datasets for training and responses"""
+        """Load Sub-Zero crypto dataset for training and responses"""
         try:
             import os
             # Try current directory first, then the full path
-            dataset_paths = [
-                'crypto_chat_dataset.json',
-                os.path.join(os.path.dirname(__file__), 'crypto_chat_dataset.json'),
-                r'c:\Users\Dell\Desktop\Krypt\crypto_chat_dataset.json'
-            ]
-            
             sub_zero_paths = [
                 'sub_zero_crypto_dataset.json',
                 os.path.join(os.path.dirname(__file__), 'sub_zero_crypto_dataset.json'),
                 r'c:\Users\Dell\Desktop\Krypt\sub_zero_crypto_dataset.json'
             ]
-            
-            # Load original crypto dataset
-            dataset = None
-            for path in dataset_paths:
-                try:
-                    with open(path, 'r', encoding='utf-8') as f:
-                        dataset = json.load(f)
-                    print(f"✅ Successfully loaded crypto chat dataset from: {path}")
-                    break
-                except FileNotFoundError:
-                    continue
             
             # Load Sub-Zero dataset
             sub_zero_dataset = None
@@ -108,14 +90,15 @@ class CryptoChatbot:
                 try:
                     with open(path, 'r', encoding='utf-8') as f:
                         sub_zero_dataset = json.load(f)
-                    print(f"✅ Successfully loaded Sub-Zero dataset from: {path}")
+                    print(f"🧊 Successfully loaded Sub-Zero dataset from: {path}")
                     break
                 except FileNotFoundError:
                     continue
             
-            if not dataset and not sub_zero_dataset:
-                raise FileNotFoundError("No datasets found in any expected location")
-              # Process the dataset into categories
+            if not sub_zero_dataset:
+                raise FileNotFoundError("Sub-Zero dataset not found in any expected location")
+              
+            # Process the Sub-Zero dataset into categories
             processed_dataset = {
                 'greetings': [],
                 'crypto_knowledge': [],
@@ -126,57 +109,58 @@ class CryptoChatbot:
                 'sub_zero_jokes': []
             }
             
-            # Process original crypto dataset
-            if dataset:
-                for item in dataset:
-                    response = item['output'].replace('Bot: ', '')
-                    
-                    # Categorize responses based on content
-                    if any(word in response.lower() for word in ['hi', 'hello', 'meet', 'assist']):
-                        processed_dataset['greetings'].append(response)
-                    elif any(word in response.lower() for word in ['bitcoin', 'ethereum', 'blockchain', 'mining', 'wallet', 'defi', 'token', 'smart contract', 'dapp']):
-                        processed_dataset['crypto_knowledge'].append(response)
-                    elif any(word in response.lower() for word in ['buying', 'selling', 'investment', 'market', 'bull', 'research', 'ico']):
-                        processed_dataset['investment_advice'].append(response)
-                    elif any(word in response.lower() for word in ['security', 'private key', 'seed', 'cold wallet', 'hardware', '2fa', 'backup']):
-                        processed_dataset['security_tips'].append(response)
-                    else:
-                        processed_dataset['general'].append(response)
+            # Process Sub-Zero dataset and categorize into all response types
+            for item in sub_zero_dataset:
+                response = item['sub_zero']
+                
+                # Categorize Sub-Zero responses into different types
+                if any(phrase in response.lower() for phrase in ['frozen', 'n-freeze-t', 'frost', 'ice', 'crypto traders throw parties', 'therapy', 'trust issues', 'joke', 'funny']):
+                    processed_dataset['sub_zero_jokes'].append(response)
+                elif any(word in response.lower() for word in ['hi', 'hello', 'meet', 'greetings', 'ice to meet']):
+                    processed_dataset['greetings'].append(response)
+                elif any(word in response.lower() for word in ['bitcoin', 'ethereum', 'blockchain', 'mining', 'wallet', 'defi', 'token', 'smart contract', 'dapp', 'nft', 'dao']):
+                    processed_dataset['crypto_knowledge'].append(response)
+                elif any(word in response.lower() for word in ['buying', 'selling', 'investment', 'market', 'bull', 'research', 'trading', 'hodl', 'fomo', 'fud']):
+                    processed_dataset['investment_advice'].append(response)
+                elif any(word in response.lower() for word in ['security', 'private key', 'seed', 'cold', 'hardware', 'backup', 'safe']):
+                    processed_dataset['security_tips'].append(response)
+                else:
+                    processed_dataset['sub_zero_responses'].append(response)
             
-            # Process Sub-Zero dataset
-            if sub_zero_dataset:
-                for item in sub_zero_dataset:
-                    response = item['sub_zero']
-                    
-                    # Categorize Sub-Zero responses
-                    if any(phrase in response.lower() for phrase in ['frozen', 'n-freeze-t', 'sub-zero', 'frost', 'ice', 'crypto traders throw parties', 'therapy', 'trust issues']):
-                        processed_dataset['sub_zero_jokes'].append(response)
-                    elif any(word in response.lower() for word in ['bitcoin', 'ethereum', 'blockchain', 'defi', 'staking', 'mining', 'wallet', 'gas', 'nft', 'dao', 'hodl', 'fomo', 'fud']):                        processed_dataset['sub_zero_responses'].append(response)
-                    else:
-                        processed_dataset['sub_zero_responses'].append(response)
+            # Fill empty categories with Sub-Zero themed defaults
+            if not processed_dataset['greetings']:
+                processed_dataset['greetings'] = ["Ice to meet you! Sub-Zero here, ready to freeze out the competition in crypto!"]
+            if not processed_dataset['crypto_knowledge']:
+                processed_dataset['crypto_knowledge'] = ["What's Sub-Zero's favorite crypto? Any coin that can weather the frost!"]
+            if not processed_dataset['investment_advice']:
+                processed_dataset['investment_advice'] = ["Remember: Even in the coldest market, research is key!"]
+            if not processed_dataset['security_tips']:
+                processed_dataset['security_tips'] = ["Keep your crypto colder than Sub-Zero's finishing moves!"]
+            if not processed_dataset['general']:
+                processed_dataset['general'] = ["That's cool... ice cold, actually!"]
             
             return processed_dataset
             
         except FileNotFoundError:
-            print("Warning: crypto datasets not found. Using default Sub-Zero responses.")
+            print("Warning: Sub-Zero dataset not found. Using default Sub-Zero responses.")
             return {
-                'greetings': ["Hi there! Sub-Zero here, ready to freeze out the competition in crypto!"],
+                'greetings': ["Ice to meet you! Sub-Zero here, ready to freeze out the competition in crypto!"],
                 'crypto_knowledge': ["What's Sub-Zero's favorite crypto? Any coin that can weather the frost!"],
-                'investment_advice': ["Remember: Even in the coldest market, research is key!"],
-                'security_tips': ["Keep your crypto colder than Sub-Zero's finishing moves!"],
-                'general': ["That's cool... ice cold, actually!"],
-                'sub_zero_responses': ["Sure! Want me to break it down more? It's critical for understanding crypto."],
-                'sub_zero_jokes': ["What do you call a frozen NFT? An N-Freeze-T, courtesy of Sub-Zero."]
+                'investment_advice': ["Remember: Even in the coldest market, research is key - Sub-Zero never makes hasty moves!"],
+                'security_tips': ["Keep your crypto colder than Sub-Zero's finishing moves! Cold storage is key!"],
+                'general': ["That's cool... ice cold, actually! How can Sub-Zero assist you further?"],
+                'sub_zero_responses': ["Sure! Want me to break it down more? It's critical for understanding crypto - Sub-Zero style!"],
+                'sub_zero_jokes': ["What do you call a frozen NFT? An N-Freeze-T, courtesy of Sub-Zero!"]
             }
         except Exception as e:
-            print(f"Error loading chat datasets: {e}")
+            print(f"Error loading Sub-Zero dataset: {e}")
             return {
-                'greetings': ["Hi there! Sub-Zero here for crypto assistance!"],
-                'crypto_knowledge': ["I can help you with cryptocurrency information!"],
-                'investment_advice': ["Research is key before making any investment."],
-                'security_tips': ["Always keep your private keys secure!"],
-                'general': ["That's interesting! Tell me more."],
-                'sub_zero_responses': ["Let me break that down for you!"],
+                'greetings': ["Ice to meet you! Sub-Zero here for crypto assistance!"],
+                'crypto_knowledge': ["I can help you with cryptocurrency information - Sub-Zero style!"],
+                'investment_advice': ["Research is key before making any investment - even Sub-Zero studies his opponents!"],
+                'security_tips': ["Always keep your private keys secure - colder than Sub-Zero's ice attacks!"],
+                'general': ["That's interesting! Tell me more, mortal."],
+                'sub_zero_responses': ["Let me break that down for you - Sub-Zero style!"],
                 'sub_zero_jokes': ["Ice to meet you in the crypto world!"]
             }
 
@@ -379,80 +363,67 @@ class CryptoChatbot:
         fallback_message = "I'm Krypt's AI assistant! I specialize in cryptocurrency analysis. Ask me about coin prices, market trends, or type a coin name to get started! 🪙"
         
         return {
-            'type': 'general',
-            'message': dataset_response if dataset_response and len(dataset_response) > 5 else fallback_message,
+            'type': 'general',            'message': dataset_response if dataset_response and len(dataset_response) > 5 else fallback_message,
             'action': 'show_help'
         }
 
     def get_smart_response(self, intent, context=""):
-        """Get intelligent response based on intent and context using both datasets"""
+        """Get intelligent response based on intent and context using Sub-Zero dataset"""
         responses = []
-        sub_zero_responses = []
         
         # Check if user wants a joke or fun response
         if any(word in context.lower() for word in ['joke', 'funny', 'laugh', 'humor', 'fun']):
-            return random.choice(self.chat_dataset['sub_zero_jokes']) if self.chat_dataset['sub_zero_jokes'] else "What do you call a frozen NFT? An N-Freeze-T!"
+            return random.choice(self.chat_dataset['sub_zero_jokes']) if self.chat_dataset['sub_zero_jokes'] else "What do you call a frozen NFT? An N-Freeze-T, courtesy of Sub-Zero!"
         
         if intent == 'greeting':
             responses = self.chat_dataset['greetings']
-            # Mix in some Sub-Zero personality
+            # Add extra Sub-Zero greetings for variety
             sub_zero_greetings = [
-                "Ice to meet you! Ready to explore the crypto world?",
+                "Ice to meet you! Ready to explore the crypto world with Sub-Zero?",
                 "Sub-Zero here! Let's freeze out the competition with some crypto knowledge!",
-                "Welcome, mortal! I'm here to help you navigate the icy waters of cryptocurrency!"
+                "Welcome, mortal! I'm here to help you navigate the icy waters of cryptocurrency!",
+                "Freeze! Sub-Zero at your service for all things crypto!"
             ]
             responses.extend(sub_zero_greetings)
             
         elif intent in ['crypto_general', 'price_inquiry']:
-            # Check if the context suggests a specific crypto topic
+            # Check context for specific crypto topics and use appropriate Sub-Zero responses
             context_lower = context.lower()
             if any(word in context_lower for word in ['bitcoin', 'btc']):
-                responses = [r for r in self.chat_dataset['crypto_knowledge'] if 'bitcoin' in r.lower()]
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if 'bitcoin' in r.lower()]
+                responses = [r for r in self.chat_dataset['crypto_knowledge'] + self.chat_dataset['sub_zero_responses'] if 'bitcoin' in r.lower()]
             elif any(word in context_lower for word in ['ethereum', 'eth']):
-                responses = [r for r in self.chat_dataset['crypto_knowledge'] if 'ethereum' in r.lower()]
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if 'ethereum' in r.lower()]
+                responses = [r for r in self.chat_dataset['crypto_knowledge'] + self.chat_dataset['sub_zero_responses'] if 'ethereum' in r.lower()]
             elif any(word in context_lower for word in ['wallet', 'store']):
-                responses = [r for r in self.chat_dataset['crypto_knowledge'] if 'wallet' in r.lower()]
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if 'wallet' in r.lower()]
+                responses = [r for r in self.chat_dataset['crypto_knowledge'] + self.chat_dataset['sub_zero_responses'] if 'wallet' in r.lower()]
             elif any(word in context_lower for word in ['mining', 'mine']):
-                responses = [r for r in self.chat_dataset['crypto_knowledge'] if 'mining' in r.lower()]
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if 'mining' in r.lower()]
+                responses = [r for r in self.chat_dataset['crypto_knowledge'] + self.chat_dataset['sub_zero_responses'] if 'mining' in r.lower()]
             elif any(word in context_lower for word in ['blockchain']):
-                responses = [r for r in self.chat_dataset['crypto_knowledge'] if 'blockchain' in r.lower()]
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if 'blockchain' in r.lower()]
+                responses = [r for r in self.chat_dataset['crypto_knowledge'] + self.chat_dataset['sub_zero_responses'] if 'blockchain' in r.lower()]
             elif any(word in context_lower for word in ['defi', 'staking', 'yield']):
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if any(term in r.lower() for term in ['defi', 'staking', 'yield'])]
+                responses = [r for r in self.chat_dataset['sub_zero_responses'] if any(term in r.lower() for term in ['defi', 'staking', 'yield'])]
             elif any(word in context_lower for word in ['nft', 'token']):
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if any(term in r.lower() for term in ['nft', 'token'])]
+                responses = [r for r in self.chat_dataset['sub_zero_responses'] if any(term in r.lower() for term in ['nft', 'token'])]
             elif any(word in context_lower for word in ['hodl', 'fomo', 'fud']):
-                sub_zero_responses = [r for r in self.chat_dataset['sub_zero_responses'] if any(term in r.lower() for term in ['hodl', 'fomo', 'fud'])]
+                responses = [r for r in self.chat_dataset['sub_zero_responses'] if any(term in r.lower() for term in ['hodl', 'fomo', 'fud'])]
             else:
-                responses = self.chat_dataset['crypto_knowledge']
-                sub_zero_responses = self.chat_dataset['sub_zero_responses']
+                # Use all crypto knowledge and Sub-Zero responses
+                responses = self.chat_dataset['crypto_knowledge'] + self.chat_dataset['sub_zero_responses']
                 
         elif intent in ['help_request', 'investment']:
-            responses = self.chat_dataset['investment_advice']
+            responses = self.chat_dataset['investment_advice'] + self.chat_dataset['sub_zero_responses']
             
         elif 'security' in context.lower():
-            responses = self.chat_dataset['security_tips']
+            responses = self.chat_dataset['security_tips'] + self.chat_dataset['sub_zero_responses']
             
         else:
-            responses = self.chat_dataset['general']
-            sub_zero_responses = self.chat_dataset['sub_zero_responses']
-        
-        # Combine responses and prioritize Sub-Zero responses for personality
-        all_responses = []
-        if sub_zero_responses:
-            all_responses.extend(sub_zero_responses)
-        if responses:
-            all_responses.extend(responses)
+            # For general queries, use all available Sub-Zero responses
+            responses = self.chat_dataset['general'] + self.chat_dataset['sub_zero_responses']
         
         # If no specific responses found, fall back to Sub-Zero general responses
-        if not all_responses:
-            all_responses = self.chat_dataset['sub_zero_responses'] or self.chat_dataset['crypto_knowledge']
+        if not responses:
+            responses = self.chat_dataset['sub_zero_responses'] or ["Ice to see you're interested in crypto! Let me break it down for you, mortal."]
         
-        return random.choice(all_responses) if all_responses else "Ice to see you're interested in crypto! Let me break it down for you."
+        return random.choice(responses) if responses else "Ice to see you're interested in crypto! Let me break it down for you, mortal."
 
     def get_crypto_education(self, topic):
         """Get educational content about specific crypto topics"""
