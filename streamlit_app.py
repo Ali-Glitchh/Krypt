@@ -7,7 +7,12 @@ from datetime import datetime
 import plotly.graph_objects as go
 import re
 from api_utils import CryptoAPIs, RATE_LIMIT_DELAY
-from crypto_chatbot import chatbot
+from crypto_chatbot import CryptoChatbot
+
+# Initialize chatbot
+@st.cache_resource
+def initialize_chatbot():
+    return CryptoChatbot()
 
 # Initialize APIs and Sentiment Analyzer
 @st.cache_resource
@@ -24,6 +29,7 @@ st.set_page_config(
 
 # Initialize services
 apis, analyzer = initialize_services()
+chatbot = initialize_chatbot()
 
 # Custom CSS
 st.markdown("""

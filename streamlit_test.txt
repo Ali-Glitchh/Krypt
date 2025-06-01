@@ -1,0 +1,2 @@
+Streamlit import: OK
+Chatbot in Streamlit context: FAILED - 'charmap' codec can't encode character '\U0001f9ca' in position 0: character maps to <undefined>
