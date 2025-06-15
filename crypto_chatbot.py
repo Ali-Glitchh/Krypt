@@ -12,6 +12,18 @@ class CryptoChatbot:
         self.chat_dataset = self._load_chat_dataset()
         self.market_data = None
         
+        # Initialize conversation trainer for natural responses
+        try:
+            from conversation_trainer import ConversationTrainer
+            self.trainer = ConversationTrainer('human_chat_subzero_full.txt')
+            self.trainer.parse_training_data()
+            self.use_natural_responses = True
+            print("✅ Natural conversation training loaded")
+        except Exception as e:
+            print(f"⚠️ Natural conversation training not available: {e}")
+            self.trainer = None
+            self.use_natural_responses = False
+        
     def _load_crypto_patterns(self):
         """Load cryptocurrency-specific conversation patterns"""
         return {
@@ -45,13 +57,15 @@ class CryptoChatbot:
             'crypto_keywords': ['price', 'buy', 'sell', 'invest', 'analysis', 'chart', 'market', 'crypto', 'bitcoin', 'ethereum'],
             'help_keywords': ['help', 'how', 'what', 'explain', 'tell me'],
             'price_keywords': ['price', 'cost', 'value', 'worth', 'current', 'latest'],
-            'trend_keywords': ['trend', 'analysis', 'forecast', 'prediction', 'outlook'],
-            'comparison_keywords': ['compare', 'vs', 'versus', 'difference', 'better']
+            'trend_keywords': ['trend', 'analysis', 'forecast', 'prediction', 'outlook'],            'comparison_keywords': ['compare', 'vs', 'versus', 'difference', 'better']
         }
 
     def _load_chat_dataset(self):
         """Load Sub-Zero themed responses with proper character personality"""
-        print(f"🧊 Loading Sub-Zero personality responses...")
+        try:
+            print("🧊 Loading Sub-Zero personality responses...")
+        except UnicodeEncodeError:
+            print("Loading Sub-Zero personality responses...")
         
         # Curated Sub-Zero themed responses with proper character personality
         return {
@@ -103,8 +117,7 @@ class CryptoChatbot:
                 "Definitely! Let's freeze this topic solid so you understand it perfectly! ❄️",
                 "Without question! Sub-Zero's wisdom flows like ice - pure and enlightening! 🧊"
             ],
-            'sub_zero_jokes': [
-                "What do you call a frozen NFT? An N-Freeze-T, courtesy of Sub-Zero! ❄️",
+            'sub_zero_jokes': [                "What do you call a frozen NFT? An N-Freeze-T, courtesy of Sub-Zero! ❄️",
                 "Why does Sub-Zero love crypto? Because it's the only thing cooler than ice! 🧊",
                 "What's Sub-Zero's favorite exchange? Binance... because it freezes the competition! ❄️",
                 "How does Sub-Zero store his crypto? In COLD storage, obviously! 🧊",
@@ -160,7 +173,17 @@ class CryptoChatbot:
         
         if intent == 'greeting':
             # Use Sub-Zero dataset responses for greetings
-            message = random.choice(self.chat_dataset['greetings'])
+            dataset_response = self.get_smart_response('greeting', user_input)
+            if dataset_response and len(dataset_response) > 5:
+                message = dataset_response
+            else:
+                # Fallback to Sub-Zero themed greetings instead of generic ones
+                sub_zero_fallbacks = [
+                    "Ice to meet you! Sub-Zero here, ready to help with crypto!",
+                    "Freeze! Sub-Zero at your service for all things cryptocurrency!",
+                    "Welcome, mortal! Let's explore the crypto world together!"
+                ]
+                message = random.choice(sub_zero_fallbacks)
             
             return {
                 'type': 'greeting',
@@ -185,31 +208,54 @@ class CryptoChatbot:
             }
         
         if intent == 'farewell':
-            message = random.choice(self.chat_dataset['farewells'])
+            farewell_responses = [
+                "Stay frosty, and may your crypto portfolio be as strong as ice! ❄️",
+                "Until next time, keep your investments colder than Sub-Zero's heart!",
+                "Farewell, mortal! Remember: HODL like ice - strong and unwavering!"
+            ]
+            message = random.choice(farewell_responses)
             
             return {
                 'type': 'farewell',
                 'message': message,
                 'action': 'show_farewell'
             }
-        
-        # For other intents, use the smart response system
-        message = self.get_smart_response(intent, user_input)
+          # For other intents, use the smart response system
+        dataset_response = self.get_smart_response(intent, user_input)
+        if dataset_response and len(dataset_response) > 5:
+            message = dataset_response
+        else:
+            message = "That's ice cold! Let me help you with that crypto question."
         
         return {
             'type': intent,
             'message': message,
             'action': 'show_response'
         }
-
+    
     def get_smart_response(self, intent, context=""):
-        """Get intelligent response based on intent and context using Sub-Zero dataset"""
+        """Get intelligent response based on intent and context using Sub-Zero dataset and natural training"""
+        
+        # First try to get a natural response from training data
+        if self.use_natural_responses and self.trainer:
+            natural_response = self.trainer.get_natural_response(context)
+            if natural_response:
+                # For non-crypto queries, use natural responses with Sub-Zero flair
+                if intent not in ['crypto_general', 'price_inquiry'] and not any(
+                    word in context.lower() for word in ['bitcoin', 'crypto', 'blockchain', 'wallet', 'mining']
+                ):
+                    return natural_response
         
         # Check if user wants a joke or fun response
         if any(word in context.lower() for word in ['joke', 'funny', 'laugh', 'humor', 'fun']):
             return random.choice(self.chat_dataset['sub_zero_jokes'])
         
         if intent == 'greeting':
+            # Mix curated greetings with natural ones
+            if self.use_natural_responses and random.random() < 0.3:  # 30% chance for natural
+                natural_greeting = self.trainer.get_natural_response(context)
+                if natural_greeting:
+                    return natural_greeting
             return random.choice(self.chat_dataset['greetings'])
             
         elif intent in ['crypto_general', 'price_inquiry']:
