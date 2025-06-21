@@ -1,9 +1,0 @@
-{
-  "name": "krypt-crypto-sentiment",
-  "version": "1.0.0",
-  "description": "Cryptocurrency sentiment analysis app",
-  "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod"
-  }
-}
