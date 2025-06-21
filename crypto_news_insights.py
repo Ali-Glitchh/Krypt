@@ -36,12 +36,36 @@ class CryptoNewsInsights:
                 ]
             }
         }
-        
-        # Market sentiment keywords
+          # Market sentiment keywords with more nuanced analysis
         self.sentiment_keywords = {
-            'bullish': ['surge', 'rally', 'moon', 'pump', 'breakout', 'bullish', 'gains', 'rise', 'up', 'positive'],
-            'bearish': ['crash', 'dump', 'dip', 'fall', 'bearish', 'decline', 'drop', 'correction', 'sell-off'],
-            'neutral': ['stable', 'sideways', 'consolidation', 'range', 'unchanged', 'mixed']
+            'bullish': {
+                'strong': ['surge', 'rally', 'moon', 'breakout', 'explosion', 'skyrocket', 'soar'],
+                'moderate': ['rise', 'gains', 'positive', 'bullish', 'optimistic', 'green', 'pump'],
+                'weak': ['slight increase', 'modest gains', 'recovery', 'bounce']
+            },
+            'bearish': {
+                'strong': ['crash', 'plummet', 'collapse', 'bloodbath', 'catastrophic', 'devastating'],
+                'moderate': ['fall', 'decline', 'bearish', 'correction', 'sell-off', 'dump', 'red'],
+                'weak': ['dip', 'pullback', 'slight decline', 'cooling']
+            },
+            'neutral': ['stable', 'sideways', 'consolidation', 'range', 'unchanged', 'mixed', 'flat']
+        }
+        
+        # Technical analysis keywords
+        self.technical_keywords = {
+            'support': ['support', 'floor', 'buying interest', 'held above'],
+            'resistance': ['resistance', 'ceiling', 'rejected at', 'struggle above'],
+            'volume': ['volume', 'trading activity', 'liquidity', 'market participation'],
+            'trend': ['trend', 'direction', 'momentum', 'moving average'],
+            'pattern': ['pattern', 'formation', 'triangle', 'flag', 'head and shoulders']
+        }
+        
+        # Fundamental analysis keywords
+        self.fundamental_keywords = {
+            'adoption': ['adoption', 'partnership', 'integration', 'mainstream', 'institutional'],
+            'regulation': ['regulation', 'SEC', 'government', 'legal', 'compliance', 'policy'],
+            'technology': ['upgrade', 'hard fork', 'scalability', 'consensus', 'blockchain'],
+            'market_structure': ['ETF', 'derivatives', 'futures', 'options', 'custody']
         }
     
     def get_latest_news(self, topic: str = "cryptocurrency", limit: int = 5) -> List[Dict]:
@@ -160,111 +184,275 @@ class CryptoNewsInsights:
             mock_articles = filtered_articles if filtered_articles else mock_articles
         
         return mock_articles[:limit]
-    
-    def analyze_sentiment(self, text: str) -> str:
-        """Analyze sentiment of news text"""
+    def analyze_sentiment(self, text: str) -> Dict:
+        """Enhanced sentiment analysis with intensity and reasoning"""
         text_lower = text.lower()
         
-        bullish_score = sum(1 for word in self.sentiment_keywords['bullish'] if word in text_lower)
-        bearish_score = sum(1 for word in self.sentiment_keywords['bearish'] if word in text_lower)
+        # Calculate sentiment scores with weights
+        bullish_strong = sum(2 for word in self.sentiment_keywords['bullish']['strong'] if word in text_lower)
+        bullish_moderate = sum(1 for word in self.sentiment_keywords['bullish']['moderate'] if word in text_lower)
+        bullish_weak = sum(0.5 for word in self.sentiment_keywords['bullish']['weak'] if word in text_lower)
         
-        if bullish_score > bearish_score:
-            return 'bullish'
-        elif bearish_score > bullish_score:
-            return 'bearish'
+        bearish_strong = sum(2 for word in self.sentiment_keywords['bearish']['strong'] if word in text_lower)
+        bearish_moderate = sum(1 for word in self.sentiment_keywords['bearish']['moderate'] if word in text_lower)
+        bearish_weak = sum(0.5 for word in self.sentiment_keywords['bearish']['weak'] if word in text_lower)
+        
+        neutral_score = sum(1 for word in self.sentiment_keywords['neutral'] if word in text_lower)
+        
+        total_bullish = bullish_strong + bullish_moderate + bullish_weak
+        total_bearish = bearish_strong + bearish_moderate + bearish_weak
+        
+        # Determine sentiment and intensity
+        if total_bullish > total_bearish + neutral_score:
+            if bullish_strong > 0:
+                sentiment, intensity = 'bullish', 'strong'
+            elif bullish_moderate > bullish_weak:
+                sentiment, intensity = 'bullish', 'moderate'
+            else:
+                sentiment, intensity = 'bullish', 'weak'
+        elif total_bearish > total_bullish + neutral_score:
+            if bearish_strong > 0:
+                sentiment, intensity = 'bearish', 'strong'
+            elif bearish_moderate > bearish_weak:
+                sentiment, intensity = 'bearish', 'moderate'
+            else:
+                sentiment, intensity = 'bearish', 'weak'
         else:
-            return 'neutral'
-    
+            sentiment, intensity = 'neutral', 'balanced'
+        
+        # Analyze technical and fundamental factors
+        technical_factors = []
+        for category, keywords in self.technical_keywords.items():
+            if any(keyword in text_lower for keyword in keywords):
+                technical_factors.append(category)
+        
+        fundamental_factors = []
+        for category, keywords in self.fundamental_keywords.items():
+            if any(keyword in text_lower for keyword in keywords):
+                fundamental_factors.append(category)
+        
+        return {
+            'sentiment': sentiment,
+            'intensity': intensity,
+            'bullish_score': total_bullish,
+            'bearish_score': total_bearish,
+            'technical_factors': technical_factors,
+            'fundamental_factors': fundamental_factors
+        }
     def get_market_insights(self, personality: str = "normal") -> str:
-        """Generate market insights based on recent news"""
+        """Generate enhanced market insights with deep analysis"""
         
         news_articles = self.get_latest_news("cryptocurrency", 5)
         
         if not news_articles:
             return "Unable to fetch current market news at the moment."
         
-        # Analyze overall sentiment
-        sentiments = []
+        # Enhanced sentiment analysis
+        sentiment_analyses = []
+        technical_factors = []
+        fundamental_factors = []
+        
         for article in news_articles:
-            sentiment = article.get('sentiment') or self.analyze_sentiment(
-                article['title'] + ' ' + article['description']
-            )
-            sentiments.append(sentiment)
+            text = article['title'] + ' ' + article['description']
+            analysis = self.analyze_sentiment(text)
+            sentiment_analyses.append(analysis)
+            technical_factors.extend(analysis['technical_factors'])
+            fundamental_factors.extend(analysis['fundamental_factors'])
         
-        bullish_count = sentiments.count('bullish')
-        bearish_count = sentiments.count('bearish')
-        neutral_count = sentiments.count('neutral')
+        # Aggregate analysis
+        strong_bullish = sum(1 for a in sentiment_analyses if a['sentiment'] == 'bullish' and a['intensity'] == 'strong')
+        moderate_bullish = sum(1 for a in sentiment_analyses if a['sentiment'] == 'bullish' and a['intensity'] == 'moderate')
+        weak_bullish = sum(1 for a in sentiment_analyses if a['sentiment'] == 'bullish' and a['intensity'] == 'weak')
         
-        # Generate insights based on personality
+        strong_bearish = sum(1 for a in sentiment_analyses if a['sentiment'] == 'bearish' and a['intensity'] == 'strong')
+        moderate_bearish = sum(1 for a in sentiment_analyses if a['sentiment'] == 'bearish' and a['intensity'] == 'moderate')
+        weak_bearish = sum(1 for a in sentiment_analyses if a['sentiment'] == 'bearish' and a['intensity'] == 'weak')
+        
+        neutral_count = sum(1 for a in sentiment_analyses if a['sentiment'] == 'neutral')
+        
+        # Count factor occurrences
+        tech_factor_counts = {factor: technical_factors.count(factor) for factor in set(technical_factors)}
+        fund_factor_counts = {factor: fundamental_factors.count(factor) for factor in set(fundamental_factors)}
+        
+        # Generate personality-specific insights
         if personality == "subzero":
-            return self._generate_subzero_insights(news_articles, bullish_count, bearish_count, neutral_count)
+            return self._generate_enhanced_subzero_insights(
+                news_articles, strong_bullish, moderate_bullish, weak_bullish,
+                strong_bearish, moderate_bearish, weak_bearish, neutral_count,
+                tech_factor_counts, fund_factor_counts
+            )
         else:
-            return self._generate_normal_insights(news_articles, bullish_count, bearish_count, neutral_count)
-    
-    def _generate_normal_insights(self, articles: List[Dict], bullish: int, bearish: int, neutral: int) -> str:
-        """Generate normal personality market insights"""
+            return self._generate_enhanced_normal_insights(
+                news_articles, strong_bullish, moderate_bullish, weak_bullish,
+                strong_bearish, moderate_bearish, weak_bearish, neutral_count,
+                tech_factor_counts, fund_factor_counts
+            )
+    def _generate_enhanced_normal_insights(self, articles: List[Dict], strong_bull: int, mod_bull: int, weak_bull: int,
+                                         strong_bear: int, mod_bear: int, weak_bear: int, neutral: int,
+                                         tech_factors: Dict, fund_factors: Dict) -> str:
+        """Generate enhanced normal personality market insights with deep analysis"""
         
         total = len(articles)
+        total_bullish = strong_bull + mod_bull + weak_bull
+        total_bearish = strong_bear + mod_bear + weak_bear
         
-        # Overall sentiment
-        if bullish > bearish:
-            sentiment_summary = f"Market sentiment appears positive with {bullish}/{total} bullish signals."
-        elif bearish > bullish:
-            sentiment_summary = f"Market shows caution with {bearish}/{total} bearish indicators."
+        # Overall sentiment with intensity
+        if strong_bull > 0:
+            sentiment_summary = f"📈 **STRONG BULLISH MOMENTUM** detected with {strong_bull} high-confidence signals!"
+        elif total_bullish > total_bearish:
+            intensity = "moderate" if mod_bull > weak_bull else "cautious"
+            sentiment_summary = f"📊 Market shows {intensity} bullish sentiment ({total_bullish}/{total} positive signals)."
+        elif strong_bear > 0:
+            sentiment_summary = f"📉 **STRONG BEARISH PRESSURE** identified with {strong_bear} significant warning signals!"
+        elif total_bearish > total_bullish:
+            intensity = "moderate" if mod_bear > weak_bear else "mild"
+            sentiment_summary = f"⚠️ Market displays {intensity} bearish sentiment ({total_bearish}/{total} negative indicators)."
         else:
-            sentiment_summary = f"Market sentiment is mixed with balanced signals."
+            sentiment_summary = f"⚖️ Market sentiment is **BALANCED** with mixed signals across {total} data points."
         
-        # Key headlines
+        # Technical analysis insights
+        tech_insights = []
+        if 'support' in tech_factors and tech_factors['support'] > 1:
+            tech_insights.append(f"🛡️ **Support levels** are being tested across multiple assets")
+        if 'resistance' in tech_factors and tech_factors['resistance'] > 1:
+            tech_insights.append(f"🚧 **Resistance zones** are limiting upward movement")
+        if 'volume' in tech_factors and tech_factors['volume'] > 1:
+            tech_insights.append(f"📊 **Volume analysis** suggests significant market participation")
+        if 'trend' in tech_factors and tech_factors['trend'] > 1:
+            tech_insights.append(f"📈 **Trend analysis** indicates directional momentum shifts")
+        
+        # Fundamental analysis insights
+        fund_insights = []
+        if 'adoption' in fund_factors and fund_factors['adoption'] > 0:
+            fund_insights.append(f"🏢 **Institutional adoption** continues driving long-term value")
+        if 'regulation' in fund_factors and fund_factors['regulation'] > 0:
+            fund_insights.append(f"⚖️ **Regulatory developments** are shaping market structure")
+        if 'technology' in fund_factors and fund_factors['technology'] > 0:
+            fund_insights.append(f"🔧 **Technology upgrades** are enhancing network capabilities")
+        if 'market_structure' in fund_factors and fund_factors['market_structure'] > 0:
+            fund_insights.append(f"🏗️ **Market infrastructure** improvements support ecosystem growth")
+        
+        # Key headlines with analysis
         key_headlines = []
         for i, article in enumerate(articles[:3]):
-            key_headlines.append(f"{i+1}. {article['title']}")
+            key_headlines.append(f"{i+1}. **{article['title']}**")
         
         headlines_text = "\n".join(key_headlines)
         
-        insight = f"""📊 **Current Market Insights:**
+        # Strategic recommendations
+        if total_bullish > total_bearish and strong_bull > 0:
+            strategy = "🎯 **Strategic Outlook:** Strong momentum suggests potential continuation. Consider DCA strategies and risk management."
+        elif total_bearish > total_bullish and strong_bear > 0:
+            strategy = "🛡️ **Strategic Outlook:** High volatility expected. Focus on risk management and potential accumulation zones."
+        else:
+            strategy = "⚖️ **Strategic Outlook:** Mixed signals suggest range-bound action. Wait for clearer directional confirmation."
+        
+        # Technical factors summary
+        tech_summary = f"**Technical Factors:** {', '.join(tech_insights) if tech_insights else 'Limited technical signals in current news cycle'}"
+        
+        # Fundamental factors summary  
+        fund_summary = f"**Fundamental Drivers:** {', '.join(fund_insights) if fund_insights else 'Focus on price action and technical levels'}"
+        
+        insight = f"""📊 **COMPREHENSIVE MARKET ANALYSIS**
 
 {sentiment_summary}
 
-**Top Headlines:**
+**📰 Key Market Headlines:**
 {headlines_text}
 
-**Analysis:** Based on recent news, the crypto market is showing {"positive momentum" if bullish > bearish else "mixed signals" if bullish == bearish else "cautious sentiment"}. {"Consider watching for institutional moves and regulatory developments." if neutral > 0 else "Keep an eye on volume and technical indicators for confirmation."}
+{tech_summary}
 
-*News updates every hour. Always do your own research before making investment decisions.*"""
+{fund_summary}
+
+{strategy}
+
+**⏰ Analysis Timeframe:** Last hour • **🔄 Next Update:** 60 minutes
+**📋 Disclaimer:** This analysis is for educational purposes. Always conduct your own research and manage risk appropriately."""
         
         return insight
-    
-    def _generate_subzero_insights(self, articles: List[Dict], bullish: int, bearish: int, neutral: int) -> str:
-        """Generate Sub-Zero personality market insights"""
+    def _generate_enhanced_subzero_insights(self, articles: List[Dict], strong_bull: int, mod_bull: int, weak_bull: int,
+                                          strong_bear: int, mod_bear: int, weak_bear: int, neutral: int,
+                                          tech_factors: Dict, fund_factors: Dict) -> str:
+        """Generate enhanced Sub-Zero personality market insights with ice-cold analysis"""
         
         total = len(articles)
+        total_bullish = strong_bull + mod_bull + weak_bull
+        total_bearish = strong_bear + mod_bear + weak_bear
         
         # Sub-Zero style sentiment analysis
-        if bullish > bearish:
-            sentiment_summary = f"❄️ The ice crystals align favorably! {bullish}/{total} signals show bullish momentum!"
-        elif bearish > bullish:
-            sentiment_summary = f"🧊 Market winds blow cold with {bearish}/{total} bearish indicators. Stay frosty!"
+        if strong_bull > 0:
+            sentiment_summary = f"🧊 **THE ICE CRYSTALS SURGE WITH POWER!** {strong_bull} mighty bullish forces dominate the battlefield!"
+        elif total_bullish > total_bearish:
+            intensity = "moderate" if mod_bull > weak_bull else "patient"
+            sentiment_summary = f"❄️ The frozen winds favor our advance! {total_bullish}/{total} signals show {intensity} bullish momentum!"
+        elif strong_bear > 0:
+            sentiment_summary = f"🌨️ **WINTER'S WRATH DESCENDS!** {strong_bear} powerful bearish storms threaten the realm!"
+        elif total_bearish > total_bullish:
+            intensity = "fierce" if mod_bear > weak_bear else "subtle"
+            sentiment_summary = f"⛄ Cold winds blow against us with {intensity} bearish pressure ({total_bearish}/{total} warning signs)!"
         else:
-            sentiment_summary = f"⛄ The crypto realm shows balanced forces - {neutral}/{total} signals remain neutral."
+            sentiment_summary = f"🧊 The realm stands in perfect balance - {neutral}/{total} forces remain neutral. The calm before the storm!"
         
-        # Key headlines with Sub-Zero flair
-        key_headlines = []
+        # Technical analysis with Sub-Zero flair
+        ice_tech_insights = []
+        if 'support' in tech_factors and tech_factors['support'] > 1:
+            ice_tech_insights.append(f"🛡️ **Ice barriers hold strong** - support levels defend our positions!")
+        if 'resistance' in tech_factors and tech_factors['resistance'] > 1:
+            ice_tech_insights.append(f"⚔️ **Enemy fortifications** - resistance zones block our advance!")
+        if 'volume' in tech_factors and tech_factors['volume'] > 1:
+            ice_tech_insights.append(f"🌪️ **Battle intensity increases** - massive volume signals epic conflicts!")
+        if 'trend' in tech_factors and tech_factors['trend'] > 1:
+            ice_tech_insights.append(f"🧭 **The tide of war shifts** - trend momentum reveals the victor!")
+        
+        # Fundamental analysis with Lin Kuei intelligence
+        lin_kuei_intel = []
+        if 'adoption' in fund_factors and fund_factors['adoption'] > 0:
+            lin_kuei_intel.append(f"🏰 **New allies join our cause** - institutional adoption strengthens our forces!")
+        if 'regulation' in fund_factors and fund_factors['regulation'] > 0:
+            lin_kuei_intel.append(f"⚖️ **Elder gods speak** - regulatory changes reshape the battlefield!")
+        if 'technology' in fund_factors and fund_factors['technology'] > 0:
+            lin_kuei_intel.append(f"🔨 **Ancient weapons upgraded** - technology advances grant new powers!")
+        if 'market_structure' in fund_factors and fund_factors['market_structure'] > 0:
+            lin_kuei_intel.append(f"🏗️ **The arena transforms** - market structure evolution favors the prepared!")
+        
+        # Key headlines with ice-cold analysis
+        ice_headlines = []
+        ice_emojis = ["❄️", "🧊", "🌨️"]
         for i, article in enumerate(articles[:3]):
-            ice_emoji = ["❄️", "🧊", "🌨️"][i % 3]
-            key_headlines.append(f"{ice_emoji} {article['title']}")
+            emoji = ice_emojis[i % 3]
+            ice_headlines.append(f"{emoji} **{article['title']}**")
         
-        headlines_text = "\n".join(key_headlines)
+        headlines_text = "\n".join(ice_headlines)
         
-        insight = f"""🧊 **Sub-Zero's Market Analysis:**
+        # Sub-Zero's strategic wisdom
+        if total_bullish > total_bearish and strong_bull > 0:
+            strategy = f"⚔️ **SUB-ZERO'S BATTLE PLAN:** The frozen currents surge with power! Strike decisively while momentum favors the bold!"
+        elif total_bearish > total_bullish and strong_bear > 0:
+            strategy = f"🛡️ **SUB-ZERO'S DEFENSE:** Winter's storm approaches! Fortify positions and prepare for the ice to crack!"
+        else:
+            strategy = f"🧊 **SUB-ZERO'S PATIENCE:** The wise warrior waits in the shadows. Let the weak reveal themselves before we strike!"
+        
+        # Lin Kuei intelligence summary
+        tech_summary = f"**🥷 Lin Kuei Technical Analysis:** {' | '.join(ice_tech_insights) if ice_tech_insights else 'The shadows reveal no clear patterns - watch and wait!'}"
+        
+        # Elder intelligence summary
+        fund_summary = f"**👤 Elder Gods' Wisdom:** {' | '.join(lin_kuei_intel) if lin_kuei_intel else 'Focus on the battle at hand - let combat skills decide victory!'}"
+        
+        insight = f"""🧊 **SUB-ZERO'S COMPREHENSIVE BATTLEFIELD ANALYSIS**
 
 {sentiment_summary}
 
-**Lin Kuei Intelligence Reports:**
+**❄️ Lin Kuei Intelligence Reports:**
 {headlines_text}
 
-**Ice-Cold Assessment:** {"The crypto battlefield favors the bold! Strike while the market shows strength!" if bullish > bearish else "Patience, young warrior. Bear markets forge diamond hands!" if bearish > bullish else "Market forces remain in balance. Watch and wait for the perfect moment to strike!"}
+{tech_summary}
 
-❄️ *Sub-Zero's wisdom: Never let emotions cloud your judgment. Ice-cold analysis conquers market chaos!* ❄️"""
+{fund_summary}
+
+{strategy}
+
+**⏰ Intelligence Update:** Hourly surveillance • **🕵️ Next Report:** 60 minutes
+**❄️ Sub-Zero's Code:** "Patience and precision conquer market chaos. Never let emotion cloud your frozen judgment!" ❄️"""
         
         return insight
     
