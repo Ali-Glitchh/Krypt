@@ -11,7 +11,7 @@ import json
 import random
 import re
 from typing import Dict, Optional, List
-from enhanced_normal_trainer_v2 import EnhancedNormalTrainer
+from pure_normal_trainer import PureNormalTrainer
 from pure_subzero_trainer import PureSubZeroTrainer
 from crypto_news_insights import CryptoNewsInsights
 
@@ -32,11 +32,10 @@ class ImprovedDualPersonalityChatbot:
     def initialize_trainers(self):
         """Initialize both personality trainers with optimal configurations"""
         print("🤖 Initializing Improved Dual-Personality Chatbot...")
-        
-        # Enhanced normal personality (crypto-aware + conversational)
+          # Enhanced normal personality (crypto-aware + conversational)
         try:
-            self.normal_trainer = EnhancedNormalTrainer()
-            print("✅ Enhanced normal personality loaded and trained")
+            self.normal_trainer = PureNormalTrainer()
+            print("✅ Pure normal personality loaded and trained")
         except Exception as e:
             print(f"❌ Failed to load normal personality: {e}")
         
