@@ -12,7 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 class PureNormalTrainer:
-    def __init__(self, dataset_file: str = 'normal_conversation_dataset.json'):
+    def __init__(self, dataset_file: str = 'crypto_normal_dataset.json'):
         self.dataset_file = dataset_file
         self.conversations = []
         self.user_inputs = []

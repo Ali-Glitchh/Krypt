@@ -11,7 +11,7 @@ import json
 import random
 import re
 from typing import Dict, Optional, List
-from pure_normal_trainer import PureNormalTrainer
+from enhanced_normal_trainer import PureNormalTrainer
 from pure_subzero_trainer import PureSubZeroTrainer
 from crypto_news_insights import CryptoNewsInsights
 
