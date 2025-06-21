@@ -8,10 +8,10 @@ from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot as 
 def test_enhanced_chatbot():
     print("🚀 Testing Final Dual-Personality Crypto Chatbot")
     print("=" * 70)
-    
-    # Initialize the chatbot
+      # Initialize the chatbot
     bot = DualPersonalityChatbot()
-      # Show training information
+    
+    # Show training information
     info = bot.get_personality_info()
     print(f"\n📊 Training Information:")
     print(f"Current personality: {info['current_personality'].upper()}")

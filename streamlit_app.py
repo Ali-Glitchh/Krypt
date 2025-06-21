@@ -7,12 +7,12 @@ from datetime import datetime
 import plotly.graph_objects as go
 import re
 from api_utils import CryptoAPIs, RATE_LIMIT_DELAY
-from crypto_chatbot import CryptoChatbot
+from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot
 
-# Initialize chatbot
+# Initialize improved dual-personality chatbot
 @st.cache_resource
 def initialize_chatbot():
-    return CryptoChatbot()
+    return ImprovedDualPersonalityChatbot()
 
 # Initialize APIs and Sentiment Analyzer
 @st.cache_resource
@@ -23,7 +23,7 @@ def initialize_services():
 
 # Page config
 st.set_page_config(
-    page_title="Krypt - Crypto News & Analysis",
+    page_title="Krypt - Enhanced Crypto Assistant",
     layout="wide",
 )
 
@@ -150,12 +150,62 @@ st.markdown("""
 </h1>
 """, unsafe_allow_html=True)
 
+# Personality switcher
+st.markdown("---")
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown("### 🤖 Choose Your Assistant Personality")
+    
+    # Initialize personality in session state
+    if 'personality_mode' not in st.session_state:
+        st.session_state.personality_mode = 'normal'
+    
+    # Personality selection buttons
+    personality_col1, personality_col2 = st.columns(2)
+    
+    with personality_col1:
+        if st.button("💬 Normal Mode", 
+                    type="primary" if st.session_state.personality_mode == 'normal' else "secondary",
+                    use_container_width=True):
+            st.session_state.personality_mode = 'normal'
+            chatbot.switch_personality('normal')
+            st.success("✅ Normal mode activated! Ready to help with crypto insights!")
+            st.rerun()
+    
+    with personality_col2:
+        if st.button("🧊 Sub-Zero Mode", 
+                    type="primary" if st.session_state.personality_mode == 'subzero' else "secondary",
+                    use_container_width=True):
+            st.session_state.personality_mode = 'subzero'
+            chatbot.switch_personality('subzero')
+            st.success("🧊 Sub-Zero mode activated! Ready to freeze the crypto markets! ❄️")
+            st.rerun()
+    
+    # Display current personality
+    if st.session_state.personality_mode == 'subzero':
+        st.markdown("**Current Personality:** 🧊 **Sub-Zero** - Ice-cold crypto warrior")
+    else:
+        st.markdown("**Current Personality:** 💬 **Normal** - Friendly crypto assistant")
+
+st.markdown("---")
+
 # Initialize chat history in session state
 if 'chat_history' not in st.session_state:
+    # Initialize personality mode first
+    if 'personality_mode' not in st.session_state:
+        st.session_state.personality_mode = 'normal'
+    
+    # Set welcome message based on personality
+    if st.session_state.personality_mode == 'subzero':
+        welcome_msg = '🧊 Sub-Zero greets you, crypto warrior! The ice master stands ready to share frozen wisdom about the blockchain realm. What knowledge do you seek? ❄️'
+    else:
+        welcome_msg = '👋 Welcome to Krypt! I\'m your AI crypto assistant. Ask me about prices, analysis, or just say hi!'
+    
     st.session_state.chat_history = [
         {
             'role': 'assistant',
-            'message': '👋 Welcome to Krypt! I\'m your AI crypto assistant. Ask me about prices, analysis, or just say hi!',
+            'message': welcome_msg,
+            'personality': st.session_state.personality_mode,
             'timestamp': datetime.now()
         }
     ]
@@ -184,6 +234,36 @@ def get_news_data(symbol):
 market_data = get_market_data()
 
 # Sidebar setup
+st.sidebar.markdown("### 🤖 AI Personality")
+
+# Initialize personality in session state if not exists
+if 'personality_mode' not in st.session_state:
+    st.session_state.personality_mode = 'normal'
+
+# Personality toggle switch
+personality_toggle = st.sidebar.toggle(
+    "🧊 Sub-Zero Mode", 
+    value=(st.session_state.personality_mode == 'subzero'),
+    help="Toggle between Normal and Sub-Zero personalities"
+)
+
+# Handle personality change
+if personality_toggle and st.session_state.personality_mode != 'subzero':
+    st.session_state.personality_mode = 'subzero'
+    chatbot.switch_personality('subzero')
+    st.sidebar.success("🧊 Sub-Zero activated!")
+elif not personality_toggle and st.session_state.personality_mode != 'normal':
+    st.session_state.personality_mode = 'normal'
+    chatbot.switch_personality('normal')
+    st.sidebar.success("💬 Normal mode activated!")
+
+# Display current personality info
+if st.session_state.personality_mode == 'subzero':
+    st.sidebar.markdown("**Current:** 🧊 **Sub-Zero** - Ice-cold crypto warrior")
+else:
+    st.sidebar.markdown("**Current:** 💬 **Normal** - Friendly crypto assistant")
+
+st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 Market Overview")
 
 # Group coins by first letter
@@ -257,30 +337,37 @@ with col1:
     crypto_input = st.text_input("💬 Ask me anything about crypto or search for a coin", "", placeholder="Try: 'hi', 'bitcoin price', 'what is ethereum'")
     
     matching_coins = []
-    selected_coin = None
-      # AI Chatbot Integration
+    selected_coin = None      # AI Chatbot Integration
     if crypto_input:
+        # Sync chatbot personality with session state
+        if hasattr(chatbot, 'personality_mode'):
+            if chatbot.personality_mode != st.session_state.personality_mode:
+                chatbot.switch_personality(st.session_state.personality_mode)
+        
         # Add user message to chat history
         st.session_state.chat_history.append({
             'role': 'user',
             'message': crypto_input,
             'timestamp': datetime.now()
-        })
-        
-        # Get AI response
-        ai_response = chatbot.generate_response(crypto_input, market_data)
-        
-        # Add AI response to chat history
+        })        # Get AI response with enhanced capabilities
+        ai_response = chatbot.get_response(crypto_input)
+          # Add AI response to chat history
         st.session_state.chat_history.append({
             'role': 'assistant',
             'message': ai_response['message'],
             'type': ai_response['type'],
+            'personality': ai_response['personality'],
             'timestamp': datetime.now()
         })
         
         # Handle specific actions
-        if ai_response['type'] == 'crypto_info':
-            selected_coin = ai_response['coin_data']
+        if ai_response['type'] == 'personality_switch':
+            st.success(f"🤖 Personality switched! Current mode: {ai_response['personality']}")
+        elif ai_response['type'] == 'news_insights':
+            st.info("📰 Real-time crypto news delivered!")
+        elif ai_response['type'] in ['subzero_response', 'normal_response']:
+            # Standard chatbot response - no special action needed
+            pass
     
     # Display chat history
     if len(st.session_state.chat_history) > 1:  # More than just welcome message
@@ -294,18 +381,23 @@ with col1:
                         <strong>👤 You:</strong> {chat['message']}
                     </div>
                     """, unsafe_allow_html=True)
-                else:
-                    # Color code based on response type
+                else:                    # Color code based on response type
                     color = {
                         'greeting': '#4ecdc4',
-                        'crypto_info': '#00ff00',
-                        'crypto_not_found': '#ff6b6b',
-                        'farewell': '#4ecdc4'
-                    }.get(chat.get('type', 'general'), '#4ecdc4')
+                        'price_query': '#00ff00',
+                        'news_query': '#ff9800', 
+                        'personality_switch': '#9c27b0',
+                        'crypto_general': '#2196f3',
+                        'farewell': '#4ecdc4',
+                        'general': '#607d8b'                    }.get(chat.get('type', 'general'), '#4ecdc4')
+                    
+                    # Add personality mode indicator
+                    current_personality = chat.get('personality', st.session_state.personality_mode)
+                    bot_name = "🧊 Sub-Zero AI" if current_personality == "subzero" else "🤖 Krypt AI"
                     
                     st.markdown(f"""
                     <div style='background-color: #1e1e1e; padding: 10px; border-radius: 10px; margin: 5px 0; border-left: 3px solid {color};'>
-                        <strong>🤖 Krypt AI:</strong> {chat['message']}
+                        <strong>{bot_name}:</strong> {chat['message']}
                     </div>
                     """, unsafe_allow_html=True)
         
