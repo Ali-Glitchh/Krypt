@@ -7,12 +7,22 @@ from datetime import datetime
 import plotly.graph_objects as go
 import re
 from api_utils import CryptoAPIs, RATE_LIMIT_DELAY
-from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot
+
+# Import chatbot with error handling
+try:
+    from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot
+    CHATBOT_AVAILABLE = True
+except ImportError as e:
+    st.error(f"Error importing chatbot: {e}")
+    CHATBOT_AVAILABLE = False
 
 # Initialize improved dual-personality chatbot
 @st.cache_resource
 def initialize_chatbot():
-    return ImprovedDualPersonalityChatbot()
+    if CHATBOT_AVAILABLE:
+        return ImprovedDualPersonalityChatbot()
+    else:
+        return None
 
 # Initialize APIs and Sentiment Analyzer
 @st.cache_resource
@@ -168,8 +178,14 @@ with col2:
                     type="primary" if st.session_state.personality_mode == 'normal' else "secondary",
                     use_container_width=True):
             st.session_state.personality_mode = 'normal'
-            chatbot.switch_personality('normal')
-            st.success("✅ Normal mode activated! Ready to help with crypto insights!")
+            if CHATBOT_AVAILABLE and chatbot is not None:
+                try:
+                    chatbot.switch_personality('normal')
+                    st.success("✅ Normal mode activated! Ready to help with crypto insights!")
+                except Exception as e:
+                    st.error(f"Error switching to normal mode: {e}")
+            else:
+                st.warning("💬 Normal mode selected (chatbot features limited)")
             st.rerun()
     
     with personality_col2:
@@ -177,8 +193,14 @@ with col2:
                     type="primary" if st.session_state.personality_mode == 'subzero' else "secondary",
                     use_container_width=True):
             st.session_state.personality_mode = 'subzero'
-            chatbot.switch_personality('subzero')
-            st.success("🧊 Sub-Zero mode activated! Ready to freeze the crypto markets! ❄️")
+            if CHATBOT_AVAILABLE and chatbot is not None:
+                try:
+                    chatbot.switch_personality('subzero')
+                    st.success("🧊 Sub-Zero mode activated! Ready to freeze the crypto markets! ❄️")
+                except Exception as e:
+                    st.error(f"Error switching to sub-zero mode: {e}")
+            else:
+                st.warning("🧊 Sub-Zero mode selected (chatbot features limited)")
             st.rerun()
     
     # Display current personality
@@ -250,12 +272,24 @@ personality_toggle = st.sidebar.toggle(
 # Handle personality change
 if personality_toggle and st.session_state.personality_mode != 'subzero':
     st.session_state.personality_mode = 'subzero'
-    chatbot.switch_personality('subzero')
-    st.sidebar.success("🧊 Sub-Zero activated!")
+    if CHATBOT_AVAILABLE and chatbot is not None:
+        try:
+            chatbot.switch_personality('subzero')
+            st.sidebar.success("🧊 Sub-Zero activated!")
+        except Exception as e:
+            st.sidebar.error(f"Error activating Sub-Zero: {e}")
+    else:
+        st.sidebar.warning("🧊 Sub-Zero mode selected (limited features)")
 elif not personality_toggle and st.session_state.personality_mode != 'normal':
     st.session_state.personality_mode = 'normal'
-    chatbot.switch_personality('normal')
-    st.sidebar.success("💬 Normal mode activated!")
+    if CHATBOT_AVAILABLE and chatbot is not None:
+        try:
+            chatbot.switch_personality('normal')
+            st.sidebar.success("💬 Normal mode activated!")
+        except Exception as e:
+            st.sidebar.error(f"Error activating Normal mode: {e}")
+    else:
+        st.sidebar.warning("💬 Normal mode selected (limited features)")
 
 # Display current personality info
 if st.session_state.personality_mode == 'subzero':
@@ -337,37 +371,54 @@ with col1:
     crypto_input = st.text_input("💬 Ask me anything about crypto or search for a coin", "", placeholder="Try: 'hi', 'bitcoin price', 'what is ethereum'")
     
     matching_coins = []
-    selected_coin = None      # AI Chatbot Integration
+    selected_coin = None    # AI Chatbot Integration
     if crypto_input:
-        # Sync chatbot personality with session state
-        if hasattr(chatbot, 'personality_mode'):
-            if chatbot.personality_mode != st.session_state.personality_mode:
-                chatbot.switch_personality(st.session_state.personality_mode)
-        
-        # Add user message to chat history
-        st.session_state.chat_history.append({
-            'role': 'user',
-            'message': crypto_input,
-            'timestamp': datetime.now()
-        })        # Get AI response with enhanced capabilities
-        ai_response = chatbot.get_response(crypto_input)
-          # Add AI response to chat history
-        st.session_state.chat_history.append({
-            'role': 'assistant',
-            'message': ai_response['message'],
-            'type': ai_response['type'],
-            'personality': ai_response['personality'],
-            'timestamp': datetime.now()
-        })
-        
-        # Handle specific actions
-        if ai_response['type'] == 'personality_switch':
-            st.success(f"🤖 Personality switched! Current mode: {ai_response['personality']}")
-        elif ai_response['type'] == 'news_insights':
-            st.info("📰 Real-time crypto news delivered!")
-        elif ai_response['type'] in ['subzero_response', 'normal_response']:
-            # Standard chatbot response - no special action needed
-            pass
+        if not CHATBOT_AVAILABLE or chatbot is None:
+            st.error("🚫 AI Chatbot is currently unavailable due to missing dependencies. Please contact support.")
+        else:
+            try:
+                # Sync chatbot personality with session state
+                if hasattr(chatbot, 'personality_mode'):
+                    if chatbot.personality_mode != st.session_state.personality_mode:
+                        chatbot.switch_personality(st.session_state.personality_mode)
+                
+                # Add user message to chat history
+                st.session_state.chat_history.append({
+                    'role': 'user',
+                    'message': crypto_input,
+                    'timestamp': datetime.now()
+                })
+                
+                # Get AI response with enhanced capabilities
+                ai_response = chatbot.get_response(crypto_input)
+                
+                # Add AI response to chat history
+                st.session_state.chat_history.append({
+                    'role': 'assistant',
+                    'message': ai_response['message'],
+                    'type': ai_response['type'],
+                    'personality': ai_response['personality'],
+                    'timestamp': datetime.now()
+                })
+                
+                # Handle specific actions
+                if ai_response['type'] == 'personality_switch':
+                    st.success(f"🤖 Personality switched! Current mode: {ai_response['personality']}")
+                elif ai_response['type'] == 'news_insights':
+                    st.info("📰 Real-time crypto news delivered!")
+                elif ai_response['type'] in ['subzero_response', 'normal_response']:
+                    # Standard chatbot response - no special action needed
+                    pass
+            except Exception as e:
+                st.error(f"🚫 Error with AI chatbot: {e}")
+                # Add fallback message to chat history
+                st.session_state.chat_history.append({
+                    'role': 'assistant',
+                    'message': "Sorry, I'm having trouble processing your request right now. Please try again later.",
+                    'type': 'error',
+                    'personality': st.session_state.personality_mode,
+                    'timestamp': datetime.now()
+                })
     
     # Display chat history
     if len(st.session_state.chat_history) > 1:  # More than just welcome message
