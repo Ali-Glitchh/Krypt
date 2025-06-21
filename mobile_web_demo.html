@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krypt AI Assistant - Mobile/Web Integration Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .personality-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: #4ecdc4;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 18px 18px 4px 18px;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .bot-message {
+            background: #f1f3f4;
+            color: #333;
+            padding: 12px 16px;
+            border-radius: 18px 18px 18px 4px;
+            margin-right: auto;
+        }
+        
+        .subzero-message {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 18px 18px 18px 4px;
+            margin-right: auto;
+        }
+        
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .message-input:focus {
+            border-color: #4ecdc4;
+        }
+        
+        .send-button {
+            background: #4ecdc4;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-button {
+            background: #e3f2fd;
+            border: 1px solid #2196F3;
+            color: #2196F3;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quick-button:hover {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .typing {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #999;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        
+        .dot {
+            width: 4px;
+            height: 4px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        .iframe-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .iframe-demo {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 id="title">🤖 Krypt AI Assistant</h2>
+            <p>Real-time crypto data & insights</p>
+            <button class="personality-toggle" onclick="togglePersonality()">
+                Switch to Sub-Zero Mode
+            </button>
+        </div>
+        
+        <div class="chat-area" id="chatArea">
+            <div class="message bot-message">
+                👋 Hello! I'm your crypto assistant. Ask me about prices, news, or insights from our articles!
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <div class="quick-actions">
+                <button class="quick-button" onclick="sendQuickMessage('What is the price of Bitcoin?')">
+                    💰 BTC Price
+                </button>
+                <button class="quick-button" onclick="sendQuickMessage('Tell me about DeFi from your articles')">
+                    📚 DeFi Insights
+                </button>
+                <button class="quick-button" onclick="sendQuickMessage('Latest crypto news')">
+                    📰 News
+                </button>
+            </div>
+            
+            <div class="input-container">
+                <input type="text" class="message-input" id="messageInput" 
+                       placeholder="Ask about crypto prices, news, or insights..."
+                       onkeypress="handleKeyPress(event)">
+                <button class="send-button" onclick="sendMessage()">
+                    ➤
+                </button>
+            </div>
+        </div>
+        
+        <div class="status" id="status">
+            Ready • Normal Mode
+        </div>
+    </div>
+
+    <script>
+        let currentPersonality = 'normal';
+        let isTyping = false;
+        
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        function updateUI() {
+            const title = document.getElementById('title');
+            const toggleButton = document.querySelector('.personality-toggle');
+            const status = document.getElementById('status');
+            
+            if (currentPersonality === 'subzero') {
+                title.textContent = '🧊 Sub-Zero Crypto Assistant ❄️';
+                toggleButton.textContent = 'Switch to Normal Mode';
+                status.textContent = 'Ready • Sub-Zero Mode ❄️';
+            } else {
+                title.textContent = '🤖 Krypt AI Assistant';
+                toggleButton.textContent = 'Switch to Sub-Zero Mode';
+                status.textContent = 'Ready • Normal Mode';
+            }
+        }
+        
+        async function togglePersonality() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/personality`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        mode: currentPersonality === 'normal' ? 'subzero' : 'normal'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentPersonality = data.current_personality;
+                    updateUI();
+                    addBotMessage(data.message, 'personality_switch');
+                }
+            } catch (error) {
+                console.error('Error toggling personality:', error);
+                addBotMessage('Sorry, couldn\'t switch personality mode right now.', 'error');
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isTyping) return;
+            
+            // Add user message
+            addUserMessage(message);
+            input.value = '';
+            
+            // Show typing indicator
+            showTyping();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        personality: currentPersonality
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide typing indicator
+                hideTyping();
+                
+                if (data.message) {
+                    addBotMessage(data.message, data.type);
+                    
+                    // Update personality if changed
+                    if (data.personality !== currentPersonality) {
+                        currentPersonality = data.personality;
+                        updateUI();
+                    }
+                } else {
+                    addBotMessage('Sorry, I couldn\'t process that request.', 'error');
+                }
+                
+            } catch (error) {
+                hideTyping();
+                console.error('Error sending message:', error);
+                addBotMessage('Sorry, I\'m having trouble connecting. Please try again.', 'error');
+            }
+        }
+        
+        function sendQuickMessage(message) {
+            document.getElementById('messageInput').value = message;
+            sendMessage();
+        }
+        
+        function addUserMessage(message) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.textContent = message;
+            chatArea.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        function addBotMessage(message, type = 'general') {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            
+            if (currentPersonality === 'subzero') {
+                messageDiv.className = 'message subzero-message';
+            } else {
+                messageDiv.className = 'message bot-message';
+            }
+            
+            // Format message based on type
+            let emoji = '🤖';
+            if (currentPersonality === 'subzero') {
+                emoji = '🧊';
+            } else if (type === 'price_query') {
+                emoji = '💰';
+            } else if (type === 'article_insight') {
+                emoji = '📚';
+            } else if (type === 'news_query') {
+                emoji = '📰';
+            }
+            
+            messageDiv.innerHTML = `${emoji} ${message.replace(/\\n/g, '<br>')}`;
+            chatArea.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        function showTyping() {
+            const chatArea = document.getElementById('chatArea');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                🤖 <span>typing</span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            `;
+            chatArea.appendChild(typingDiv);
+            scrollToBottom();
+            isTyping = true;
+        }
+        
+        function hideTyping() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+            isTyping = false;
+        }
+        
+        function scrollToBottom() {
+            const chatArea = document.getElementById('chatArea');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUI();
+            
+            // Test API connection
+            fetch(`${API_BASE_URL}/status`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').textContent = `Connected • ${data.chatbot_personality} Mode`;
+                    currentPersonality = data.chatbot_personality;
+                    updateUI();
+                })
+                .catch(error => {
+                    document.getElementById('status').textContent = 'Offline • Please start API server';
+                    console.error('API connection failed:', error);
+                });
+        });
+    </script>
+</body>
+</html>
