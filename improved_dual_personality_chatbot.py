@@ -12,6 +12,7 @@ import random
 import re
 from typing import Dict, Optional, List
 from enhanced_normal_trainer import PureNormalTrainer
+from continuous_learning_trainer import ContinuousLearningTrainer
 from pure_subzero_trainer import PureSubZeroTrainer
 from crypto_news_insights import CryptoNewsInsights
 
@@ -22,31 +23,41 @@ class ImprovedDualPersonalityChatbot:
         self.subzero_trainer = None
         self.news_service = None
         
+        # Autonomous training components
+        self.autonomous_trainer = None
+        self.auto_training_enabled = False
+        
         # Initialize all services
         self.initialize_trainers()
         self.initialize_news_service()
+        self.initialize_autonomous_training()
         
         # Conversation history
         self.conversation_history = []
-    
     def initialize_trainers(self):
         """Initialize both personality trainers with optimal configurations"""
-        print("🤖 Initializing Improved Dual-Personality Chatbot...")
-          # Enhanced normal personality (crypto-aware + conversational)
-        try:
-            self.normal_trainer = PureNormalTrainer()
-            print("✅ Pure normal personality loaded and trained")
-        except Exception as e:
-            print(f"❌ Failed to load normal personality: {e}")
+        print("🤖 Initializing Enhanced Dual-Personality Chatbot with Continuous Learning...")
         
-        # Pure Sub-Zero personality (dataset-only)
+        # Enhanced normal personality with continuous learning
         try:
+            self.normal_trainer = ContinuousLearningTrainer()
+            print("✅ Continuous learning normal personality loaded and trained")
+        except Exception as e:
+            print(f"❌ Failed to load continuous learning trainer: {e}")
+            # Fallback to basic trainer
+            try:
+                self.normal_trainer = PureNormalTrainer()
+                print("✅ Fallback normal personality loaded")
+            except Exception as e2:
+                print(f"❌ Failed to load fallback trainer: {e2}")
+        
+        # Pure Sub-Zero personality (dataset-only)        try:
             self.subzero_trainer = PureSubZeroTrainer()
             print("✅ Pure Sub-Zero personality loaded and trained")
         except Exception as e:
             print(f"❌ Failed to load Sub-Zero personality: {e}")
         
-        print("🎯 Improved dual-personality chatbot ready!")
+        print("🎯 Enhanced dual-personality chatbot with continuous learning ready!")
     
     def initialize_news_service(self):
         """Initialize the crypto news insights service"""
@@ -56,6 +67,26 @@ class ImprovedDualPersonalityChatbot:
         except Exception as e:
             print(f"⚠️ News service failed to load: {e}")
             self.news_service = None
+    
+    def initialize_autonomous_training(self):
+        """Initialize autonomous training system"""
+        try:
+            # Import here to avoid circular imports
+            import sys
+            import os
+            sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+            
+            # Try to import the autonomous training system
+            try:
+                from autonomous_training_system import AutonomousTrainingSystem
+                self.autonomous_trainer = AutonomousTrainingSystem(self)
+                print("🤖 Autonomous training system initialized")
+            except ImportError:
+                print("⚠️ Autonomous training system not found - creating placeholder")
+                self.autonomous_trainer = None
+        except Exception as e:
+            print(f"⚠️ Autonomous training failed to initialize: {e}")
+            self.autonomous_trainer = None
     
     def switch_personality(self, mode: str = None) -> str:
         """Switch between normal and Sub-Zero personality modes"""
@@ -174,17 +205,35 @@ class ImprovedDualPersonalityChatbot:
                     "personality": self.personality_mode,
                     "type": "news_insights"
                 }
-        
-        # Get response from appropriate trainer
+          # Get response from appropriate trainer with enhanced learning
         response = None
         response_type = "unknown"
+        confidence = 0.0
+        
+        # Generate unique conversation ID for this session
+        conversation_id = f"session_{id(self)}"
         
         if self.personality_mode == "subzero" and self.subzero_trainer:
             response = self.subzero_trainer.get_response(user_input)
             response_type = "subzero_response"
+            confidence = 0.8  # Sub-Zero trainer doesn't return confidence yet
         elif self.personality_mode == "normal" and self.normal_trainer:
-            response = self.normal_trainer.find_best_response(user_input)
-            response_type = "normal_response"
+            # Use enhanced learning method if available
+            if hasattr(self.normal_trainer, 'find_best_response_with_learning'):
+                result = self.normal_trainer.find_best_response_with_learning(user_input, conversation_id)
+                response = result['response']
+                confidence = result['confidence']
+                response_type = f"normal_{result['source']}"
+                
+                # Learn from high-quality interactions
+                if confidence > 0.7:
+                    # This was a good match, record it for future learning
+                    pass  # Already handled in the trainer
+            else:
+                # Fallback to basic method
+                response = self.normal_trainer.find_best_response(user_input)
+                response_type = "normal_response"
+                confidence = 0.6
         
         # If no response found, try to get a contextual response
         if not response or response.strip() == "":
@@ -200,14 +249,22 @@ class ImprovedDualPersonalityChatbot:
         # Final fallback - should rarely be reached
         if not response or response.strip() == "":
             response = "I'm processing that information. Could you rephrase your question?"
-            response_type = "system_fallback"
-        
-        # Add to conversation history
+            response_type = "system_fallback"          # Add to conversation history
         self.conversation_history.append({
             "user": user_input,
             "bot": response,
             "personality": self.personality_mode
         })
+        
+        # Record interaction for advanced training
+        if self.autonomous_trainer:
+            self.autonomous_trainer.record_interaction(
+                user_input=user_input,
+                bot_response=response,
+                confidence=confidence,
+                response_type=response_type,
+                personality=self.personality_mode
+            )
         
         return {
             "message": response,
@@ -216,7 +273,7 @@ class ImprovedDualPersonalityChatbot:
         }
     
     def get_personality_info(self) -> Dict:
-        """Get information about current personality and training data"""
+        """Get comprehensive information about current personality and training data"""
         info = {
             "current_personality": self.personality_mode,
             "available_personalities": ["normal", "subzero"],
@@ -228,17 +285,46 @@ class ImprovedDualPersonalityChatbot:
             ]
         }
         
+        # Enhanced normal trainer info
         if self.normal_trainer:
-            info["normal_training"] = {
-                "type": "Enhanced Normal",
-                "features": ["DailyDialog dataset", "Crypto knowledge integration", "Natural conversations"]
-            }
+            if hasattr(self.normal_trainer, 'get_learning_stats'):
+                learning_stats = self.normal_trainer.get_learning_stats()
+                info["normal_training"] = {
+                    "type": "Continuous Learning Enhanced",
+                    "features": learning_stats.get('features', []),
+                    "accuracy_rate": f"{learning_stats.get('accuracy_rate', 0)}%",
+                    "total_conversations": learning_stats.get('total_conversations', 0),
+                    "dynamic_conversations": learning_stats.get('dynamic_conversations', 0),
+                    "vocabulary_size": learning_stats.get('vocabulary_size', 0)
+                }
+                
+                # Add continuous learning features to main features
+                if learning_stats.get('accuracy_rate', 0) > 0:
+                    info["features"].extend([
+                        "Continuous learning",
+                        "Adaptive accuracy",
+                        "Context awareness"
+                    ])
+            else:
+                # Fallback for basic trainer
+                info["normal_training"] = {
+                    "type": "Enhanced Normal",
+                    "features": ["Crypto-focused dataset", "Enhanced matching", "Keyword recognition"]
+                }
         
+        # Sub-Zero trainer info
         if self.subzero_trainer:
-            info["subzero_training"] = {
-                "type": "Pure Sub-Zero",
-                "features": ["3500+ Sub-Zero pairs", "Authentic personality", "Crypto expertise"]
-            }
+            if hasattr(self.subzero_trainer, 'get_training_stats'):
+                subzero_stats = self.subzero_trainer.get_training_stats()
+                info["subzero_training"] = {
+                    "type": "Pure Sub-Zero training",
+                    "features": subzero_stats.get('features', ["Authentic Sub-Zero personality", "Crypto expertise"])
+                }
+            else:
+                info["subzero_training"] = {
+                    "type": "Pure Sub-Zero",
+                    "features": ["3500+ Sub-Zero pairs", "Authentic personality", "Crypto expertise"]
+                }
         
         return info
     
@@ -249,7 +335,96 @@ class ImprovedDualPersonalityChatbot:
     def clear_history(self):
         """Clear conversation history"""
         self.conversation_history = []
-
+    
+    def get_learning_statistics(self) -> Dict:
+        """Get comprehensive learning statistics from the enhanced trainer"""
+        stats = {
+            'continuous_learning_enabled': False,
+            'autonomous_training_enabled': self.auto_training_enabled,
+            'normal_trainer_stats': {},
+            'subzero_trainer_stats': {},
+            'autonomous_training_stats': {},
+            'overall_accuracy': 'N/A',
+            'learning_features': []
+        }
+        
+        # Get normal trainer stats (enhanced with continuous learning)
+        if self.normal_trainer and hasattr(self.normal_trainer, 'get_learning_stats'):
+            normal_stats = self.normal_trainer.get_learning_stats()
+            stats['normal_trainer_stats'] = normal_stats
+            stats['continuous_learning_enabled'] = True
+            stats['overall_accuracy'] = f"{normal_stats.get('accuracy_rate', 0)}%"
+            stats['learning_features'] = normal_stats.get('features', [])
+        elif self.normal_trainer and hasattr(self.normal_trainer, 'get_training_stats'):
+            # Fallback to basic stats
+            stats['normal_trainer_stats'] = self.normal_trainer.get_training_stats()
+        
+        # Get Sub-Zero trainer stats
+        if self.subzero_trainer and hasattr(self.subzero_trainer, 'get_training_stats'):
+            stats['subzero_trainer_stats'] = self.subzero_trainer.get_training_stats()
+        
+        # Get autonomous training stats
+        if self.autonomous_trainer:
+            auto_stats = self.autonomous_trainer.get_training_status()
+            stats['autonomous_training_stats'] = auto_stats
+            if auto_stats.get('current_accuracy', 0) > 0:
+                stats['overall_accuracy'] = f"{auto_stats['current_accuracy']}%"
+        
+        # Calculate overall statistics
+        total_conversations = 0
+        if 'total_conversations' in stats['normal_trainer_stats']:
+            total_conversations += stats['normal_trainer_stats']['total_conversations']
+        if 'total_conversations' in stats['subzero_trainer_stats']:
+            total_conversations += stats['subzero_trainer_stats']['total_conversations']
+        
+        stats['total_training_conversations'] = total_conversations
+        stats['conversation_history_length'] = len(self.conversation_history)
+        
+        return stats
+    
+    def enable_autonomous_training(self):
+        """Enable autonomous training"""
+        if not self.autonomous_trainer:
+            print("❌ Autonomous training system not available")
+            return False
+        
+        if self.auto_training_enabled:
+            print("⚠️ Autonomous training already enabled")
+            return True
+        
+        self.autonomous_trainer.start_autonomous_training()
+        self.auto_training_enabled = True
+        print("🚀 Autonomous training enabled - chatbot will continuously improve!")
+        return True
+    
+    def disable_autonomous_training(self):
+        """Disable autonomous training"""
+        if not self.autonomous_trainer:
+            return True
+        
+        if not self.auto_training_enabled:
+            print("⚠️ Autonomous training already disabled")
+            return True
+        
+        self.autonomous_trainer.stop_autonomous_training()
+        self.auto_training_enabled = False
+        print("⏹️ Autonomous training disabled")
+        return True
+    
+    def get_training_recommendations(self) -> List[str]:
+        """Get training recommendations"""
+        if self.autonomous_trainer:
+            return self.autonomous_trainer.get_improvement_recommendations()
+        else:
+            return ["Autonomous training system not available"]
+    
+    def get_autonomous_training_status(self) -> Dict:
+        """Get autonomous training status"""
+        if self.autonomous_trainer:
+            return self.autonomous_trainer.get_training_status()
+        else:
+            return {"available": False, "message": "Autonomous training not initialized"}
+    
 def main():
     """Interactive demo of the improved chatbot"""
     print("🚀 Improved Dual-Personality Crypto Chatbot Demo")

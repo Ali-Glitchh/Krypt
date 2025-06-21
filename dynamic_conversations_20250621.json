@@ -1,0 +1,92 @@
+[
+  {
+    "user": "Hello!",
+    "bot": "Hello! I'm your friendly crypto assistant. How can I help you with your cryptocurrency questions today?",
+    "quality_score": 1.0,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196721",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "What is Bitcoin?",
+    "bot": "Bitcoin is the world's first cryptocurrency, created by the mysterious Satoshi Nakamoto in 2009. It's a decentralized digital currency that operates on blockchain technology, allowing peer-to-peer transactions without intermediaries like banks.",
+    "quality_score": 1.0,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196734",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "How do I start investing in crypto?",
+    "bot": "Start by educating yourself about blockchain and major cryptocurrencies. Begin with small amounts you can afford to lose, use reputable exchanges, enable security features like 2FA, and consider dollar-cost averaging for long-term investing.",
+    "quality_score": 1.0,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196740",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "Tell me about blockchain security",
+    "bot": "Blockchain security comes from its decentralized nature, cryptographic hashing, and consensus mechanisms. Each block is cryptographically linked to the previous one, making it nearly impossible to alter historical data without detection.",
+    "quality_score": 1.0,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196745",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "What's your favorite cryptocurrency?",
+    "bot": "As an AI assistant, I don't have personal preferences, but I appreciate the innovation across the crypto ecosystem! Bitcoin's pioneering role, Ethereum's smart contract capabilities, and the creativity in DeFi and NFT projects all contribute to this exciting space.",
+    "quality_score": 1.0,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196749",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "Goodbye!",
+    "bot": "Goodbye! Thanks for the great crypto conversation. Remember to always do your own research and invest responsibly. Feel free to come back anytime with more questions!",
+    "quality_score": 1.0,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196753",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "Hello!",
+    "bot": "🧊 Greetings, crypto warrior! Sub-Zero acknowledges your presence. What blockchain wisdom do you seek? 🧊",
+    "quality_score": 0.99,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196759",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "What is Bitcoin?",
+    "bot": "⛄ Behold the frozen wisdom of the ice clan! Bitcoin operates through blockchain technology - each block linked like ice crystals in an unbreakable chain! Miners secure the network, earning rewards through proof-of-work consensus! ⛄",
+    "quality_score": 0.99,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196772",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "How do I start investing in crypto?",
+    "bot": "🔵 Wisdom as sharp as The ice master's ice daggers! Risk management preserves capital for future opportunities! Never risk more than you can afford to lose - even The ice master chooses his battles wisely! 🔵",
+    "quality_score": 0.89,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196779",
+    "source": "dynamic_learning"
+  },
+  {
+    "user": "Tell me about blockchain security",
+    "bot": "❄️ I am Sub-Zero, master of cryomancy and guardian of crypto knowledge! Ice flows through my veins, blockchain through my mind! ❄️",
+    "quality_score": 0.99,
+    "usage_count": 0,
+    "last_used": null,
+    "date_added": "2025-06-21T22:01:13.196786",
+    "source": "dynamic_learning"
+  }
+]

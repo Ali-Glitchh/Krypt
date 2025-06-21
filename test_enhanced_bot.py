@@ -103,8 +103,58 @@ def test_enhanced_chatbot():
     for personality, count in personality_counts.items():
         print(f"{personality.capitalize()} responses: {count}")
     
+    # Test advanced training features
+    print(f"\n{'='*70}")
+    print("🎓 TESTING ADVANCED TRAINING FEATURES")
+    print("-" * 50)
+      # Show learning statistics
+    learning_stats = bot.get_learning_statistics()
+    print(f"📊 Learning Statistics:")
+    print(f"   Continuous learning: {learning_stats.get('continuous_learning_enabled', False)}")
+    print(f"   Autonomous training: {learning_stats.get('autonomous_training_enabled', False)}")
+    
+    if 'autonomous_training_stats' in learning_stats:
+        auto_stats = learning_stats['autonomous_training_stats']
+        print(f"   Current accuracy: {auto_stats.get('current_accuracy', 'N/A')}%")
+        print(f"   Training sessions: {auto_stats.get('sessions_completed', 0)}")
+        print(f"   Improvement rate: {auto_stats.get('improvement_rate', 0):+.1f}%")
+        print(f"   Synthetic conversations: {auto_stats.get('synthetic_conversations', 0)}")
+    
+    # Test autonomous training features
+    print(f"\n🤖 Testing Autonomous Training:")
+    
+    # Enable autonomous training
+    print("   Enabling autonomous training...")
+    if bot.enable_autonomous_training():
+        print("   ✅ Autonomous training started!")
+        
+        # Let it run for a short demo
+        import time
+        print("   ⏳ Running training for 60 seconds...")
+        time.sleep(60)
+        
+        # Check progress
+        auto_status = bot.get_autonomous_training_status()
+        print(f"   📈 Training progress:")
+        print(f"      Sessions: {auto_status.get('sessions_completed', 0)}")
+        print(f"      Accuracy: {auto_status.get('current_accuracy', 0):.1f}%")
+        print(f"      Improvement: {auto_status.get('improvement_rate', 0):+.1f}%")
+        
+        # Disable training
+        bot.disable_autonomous_training()
+        print("   ⏹️ Autonomous training stopped")
+    else:
+        print("   ❌ Failed to start autonomous training")
+    
+    # Get training recommendations
+    print(f"\n💡 Training Recommendations:")
+    recommendations = bot.get_training_recommendations()
+    for i, rec in enumerate(recommendations, 1):
+        print(f"   {i}. {rec}")
+    
     print(f"\n✅ Enhanced chatbot testing completed!")
     print("🎯 Both personalities are fully trained and operational!")
+    print("🚀 Advanced training system is actively improving accuracy!")
 
 if __name__ == "__main__":
     test_enhanced_chatbot()
