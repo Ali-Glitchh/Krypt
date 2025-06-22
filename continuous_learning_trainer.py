@@ -195,8 +195,7 @@ class ContinuousLearningTrainer:
             if word in self.vocabulary:
                 idx = self.vocabulary.index(word)
                 vector[idx] += 1.0
-        
-        # Normalize vector
+          # Normalize vector
         total = sum(vector)
         if total > 0:
             vector = [v / total for v in vector]
@@ -216,7 +215,8 @@ class ContinuousLearningTrainer:
             return 0.0
         
         return dot_product / (magnitude1 * magnitude2)
-      def find_best_response_with_learning(self, user_input: str, conversation_id: str = None) -> Dict:
+    
+    def find_best_response_with_learning(self, user_input: str, conversation_id: str = None) -> Dict:
         """Enhanced response finding with simplified similarity calculation"""
         if not self.user_inputs or not self.word_vectors:
             return {
