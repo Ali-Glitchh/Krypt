@@ -4,7 +4,6 @@ requests==2.31.0
 streamlit==1.28.0
 plotly==5.17.0
 pandas>=2.0.0
-kucoin-python==1.0.10
 numpy>=1.21.0
 flask>=2.0.0
 flask-cors>=4.0.0

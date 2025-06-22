@@ -6,7 +6,15 @@ import time
 from datetime import datetime
 import plotly.graph_objects as go
 import re
-from api_utils import CryptoAPIs, RATE_LIMIT_DELAY
+
+# Import API utilities with error handling
+try:
+    from api_utils import CryptoAPIs, RATE_LIMIT_DELAY
+    API_UTILS_AVAILABLE = True
+except ImportError as e:
+    st.warning(f"⚠️ API utilities not available: {e}")
+    API_UTILS_AVAILABLE = False
+    RATE_LIMIT_DELAY = 1.5  # fallback value
 
 # Import chatbot with error handling
 try:
@@ -27,7 +35,15 @@ def initialize_chatbot():
 # Initialize APIs and Sentiment Analyzer
 @st.cache_resource
 def initialize_services():
-    crypto_apis = CryptoAPIs()
+    if API_UTILS_AVAILABLE:
+        try:
+            crypto_apis = CryptoAPIs()
+        except Exception as e:
+            st.warning(f"⚠️ Could not initialize crypto APIs: {e}")
+            crypto_apis = None
+    else:
+        crypto_apis = None
+        
     analyzer = SentimentIntensityAnalyzer()
     return crypto_apis, analyzer
 
@@ -235,8 +251,16 @@ if 'chat_history' not in st.session_state:
 # Cache market data
 @st.cache_data(ttl=300)  # Cache for 5 minutes
 def get_market_data():
+    if apis is None:
+        st.warning("⚠️ Market data not available - API services could not be initialized")
+        return []
+    
     with st.spinner('Fetching market data...'):
-        return apis.get_markets_data()
+        try:
+            return apis.get_markets_data()
+        except Exception as e:
+            st.warning(f"⚠️ Error fetching market data: {e}")
+            return []
 
 # Cache news data
 @st.cache_data(ttl=300)  # Cache for 5 minutes
