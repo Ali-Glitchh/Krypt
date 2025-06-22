@@ -226,13 +226,15 @@ class ImprovedDualPersonalityChatbot:
                     # This was a good match, record it for future learning
                     pass  # Already handled in the trainer
             else:
-                # Fallback to basic method
-                response = self.normal_trainer.find_best_response(user_input)
+                # Fallback to basic method                response = self.normal_trainer.find_best_response(user_input)
                 response_type = "normal_response"
                 confidence = 0.6
         
+        # Extract response text (handle both dict and string responses)
+        response_text = response.get("message", "") if isinstance(response, dict) else (response if isinstance(response, str) else "")
+        
         # If no response found, try to get a contextual response
-        if not response or response.strip() == "":
+        if not response or response_text.strip() == "":
             if self.personality_mode == "subzero" and self.subzero_trainer:
                 # Try a more general Sub-Zero response
                 response = self.subzero_trainer.get_response("crypto")
@@ -242,28 +244,32 @@ class ImprovedDualPersonalityChatbot:
                 response = self.normal_trainer.find_best_response("help")
                 response_type = "normal_fallback"
         
+        # Extract final response text for consistency
+        final_response_text = response.get("message", "") if isinstance(response, dict) else (response if isinstance(response, str) else "")
+        
         # Final fallback - should rarely be reached
-        if not response or response.strip() == "":
-            response = "I'm processing that information. Could you rephrase your question?"
-            response_type = "system_fallback"          # Add to conversation history
+        if not final_response_text or final_response_text.strip() == "":
+            final_response_text = "I'm processing that information. Could you rephrase your question?"
+            response_type = "system_fallback"
+            
+        # Add to conversation history
         self.conversation_history.append({
             "user": user_input,
-            "bot": response,
+            "bot": final_response_text,
             "personality": self.personality_mode
         })
-        
-        # Record interaction for advanced training
+          # Record interaction for advanced training
         if self.autonomous_trainer:
             self.autonomous_trainer.record_interaction(
                 user_input=user_input,
-                bot_response=response,
+                bot_response=final_response_text,
                 confidence=confidence,
                 response_type=response_type,
                 personality=self.personality_mode
             )
         
         return {
-            "message": response,
+            "message": final_response_text,
             "personality": self.personality_mode,
             "type": response_type
         }
