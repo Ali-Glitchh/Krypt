@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 Enhanced Pure Dataset-Trained Normal Trainer - Crypto-focused responses
+Uses simplified similarity matching without scikit-learn dependencies
 """
 
 import json
 import re
 import random
+import math
 from typing import Dict, List, Optional
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 class PureNormalTrainer:
@@ -17,9 +17,12 @@ class PureNormalTrainer:
         self.conversations = []
         self.user_inputs = []
         self.bot_responses = []
-        self.vectorizer = None
-        self.input_vectors = None
         self.response_cache = {}
+        
+        # Custom similarity components
+        self.word_vectors = []
+        self.all_words = []
+        self.vocab_size = 0
         
         # Load and process the dataset
         self.load_dataset()
@@ -28,26 +31,27 @@ class PureNormalTrainer:
     def load_dataset(self):
         """Load the conversation dataset"""
         try:
-            with open(self.dataset_file, 'r', encoding='utf-8') as f:
+            with open(self.dataset_file, 'r') as f:
                 data = json.load(f)
-            
-            for item in data:
-                user_msg = item.get('user', '')
-                bot_response = item.get('bot', '')
                 
-                if user_msg and bot_response:
-                    self.conversations.append({
-                        "user": user_msg,
-                        "bot": bot_response
-                    })
-                    
-                    self.user_inputs.append(user_msg)
-                    self.bot_responses.append(bot_response)
-                    
-            print(f"✅ Loaded {len(self.conversations)} crypto-focused conversation pairs")
+            if isinstance(data, dict) and 'conversations' in data:
+                self.conversations = data['conversations']
+            elif isinstance(data, list):
+                self.conversations = data
+            else:
+                print(f"❌ Invalid dataset format in {self.dataset_file}")
+                self.conversations = []
             
-        except Exception as e:
-            print(f"❌ Error loading dataset: {e}")
+            # Extract user inputs and bot responses
+            for conv in self.conversations:
+                if 'user' in conv and 'bot' in conv:
+                    self.user_inputs.append(conv['user'])
+                    self.bot_responses.append(conv['bot'])
+            
+            print(f"✅ Loaded {len(self.conversations)} crypto conversations from dataset")
+            
+        except FileNotFoundError:
+            print(f"❌ Dataset file not found: {self.dataset_file}")
             self.conversations = []
             # Fallback basic responses
             self.user_inputs = ["hello", "what is bitcoin", "how are you"]
@@ -56,43 +60,78 @@ class PureNormalTrainer:
                 "Bitcoin is the first cryptocurrency.",
                 "I'm doing great! Ready to talk crypto?"
             ]
+
+    def tokenize_text(self, text: str) -> List[str]:
+        """Simple tokenization function"""
+        # Remove punctuation and split into words
+        text = re.sub(r'[^\w\s]', ' ', text)
+        words = text.split()
+        return [word for word in words if len(word) > 2]  # Filter short words
     
+    def text_to_vector(self, text: str) -> List[float]:
+        """Convert text to simple word count vector"""
+        words = self.tokenize_text(text)
+        vector = [0.0] * self.vocab_size
+        
+        for i, vocab_word in enumerate(self.all_words):
+            vector[i] = words.count(vocab_word)
+        
+        return vector
+    
+    def cosine_similarity_custom(self, vec1: List[float], vec2: List[float]) -> float:
+        """Custom cosine similarity implementation"""
+        if not vec1 or not vec2:
+            return 0.0
+        
+        # Calculate dot product
+        dot_product = sum(a * b for a, b in zip(vec1, vec2))
+        
+        # Calculate magnitudes
+        magnitude1 = math.sqrt(sum(a * a for a in vec1))
+        magnitude2 = math.sqrt(sum(a * a for a in vec2))
+        
+        # Avoid division by zero
+        if magnitude1 == 0 or magnitude2 == 0:
+            return 0.0
+        
+        return dot_product / (magnitude1 * magnitude2)
+
     def build_similarity_model(self):
-        """Build TF-IDF similarity model for response matching"""
+        """Build simplified similarity model without scikit-learn"""
         if not self.user_inputs:
             print("❌ No training data available for similarity model")
             return
         
         try:
-            # Create TF-IDF vectorizer with crypto-optimized settings
-            self.vectorizer = TfidfVectorizer(
-                lowercase=True,
-                stop_words='english',
-                max_features=5000,
-                ngram_range=(1, 2),  # Include bigrams for better context
-                min_df=1,
-                max_df=0.95
-            )
+            # Use simple word-based similarity instead of TF-IDF
+            self.word_vectors = []
+            self.all_words = set()
             
-            # Fit and transform the user inputs
-            self.input_vectors = self.vectorizer.fit_transform(self.user_inputs)
+            # Build vocabulary from all inputs
+            for input_text in self.user_inputs:
+                words = self.tokenize_text(input_text.lower())
+                self.all_words.update(words)
             
-            print(f"✅ Built similarity model with {self.input_vectors.shape[0]} conversations")
-            print(f"📊 Vocabulary size: {len(self.vectorizer.vocabulary_)}")
+            self.all_words = sorted(list(self.all_words))
+            self.vocab_size = len(self.all_words)
+            
+            # Create word vectors for each input
+            for input_text in self.user_inputs:
+                vector = self.text_to_vector(input_text.lower())
+                self.word_vectors.append(vector)
+            
+            print(f"✅ Built similarity model with {len(self.word_vectors)} conversations")
+            print(f"📊 Vocabulary size: {self.vocab_size}")
             
         except Exception as e:
             print(f"❌ Error building similarity model: {e}")
-            self.vectorizer = None
-            self.input_vectors = None
+            self.word_vectors = None
+            self.vocab_size = 0
 
     def find_best_response(self, user_input: str, threshold: float = 0.1) -> str:
         """Find the best response using enhanced similarity matching"""
-        if not self.user_inputs or not self.vectorizer:
+        if not self.user_inputs or not hasattr(self, 'word_vectors') or not self.word_vectors:
             return "I'm still learning about cryptocurrency! Please ask me about Bitcoin, Ethereum, or blockchain."
-        
-        user_input = user_input.strip()
-        if not user_input:
-            return "I'm here to help with your crypto questions!"
         
         # Check cache first
         cache_key = user_input.lower().strip()
@@ -109,11 +148,17 @@ class PureNormalTrainer:
                 self.response_cache[cache_key] = keyword_response
                 return keyword_response
             
-            # Vectorize user input
-            user_vector = self.vectorizer.transform([processed_input])
+            # Create vector for user input
+            user_vector = self.text_to_vector(processed_input.lower())
             
-            # Calculate similarities
-            similarities = cosine_similarity(user_vector, self.input_vectors).flatten()
+            # Calculate similarities with all training inputs
+            similarities = []
+            for i, training_vector in enumerate(self.word_vectors):
+                similarity = self.cosine_similarity_custom(user_vector, training_vector)
+                similarities.append(similarity)
+            
+            # Convert to numpy array for easier processing
+            similarities = np.array(similarities)
             
             # Get top matches above threshold
             valid_indices = np.where(similarities >= threshold)[0]
@@ -137,136 +182,144 @@ class PureNormalTrainer:
                 
                 # Cache the response
                 self.response_cache[cache_key] = response
+                
                 return response
             else:
-                # Absolutely no matches - use fallback
-                return self.get_fallback_response(user_input)
+                # Enhanced fallback with context-aware responses
+                fallback_response = self.get_smart_fallback(user_input)
+                self.response_cache[cache_key] = fallback_response
+                return fallback_response
                 
         except Exception as e:
             print(f"⚠️ Error in similarity matching: {e}")
-            return self.get_fallback_response(user_input)
-    
+            return self.get_smart_fallback(user_input)
+
     def preprocess_input(self, user_input: str) -> str:
         """Enhanced preprocessing for better matching"""
-        # Convert to lowercase
-        text = user_input.lower()
+        processed = user_input.lower().strip()
         
-        # Remove extra whitespace
-        text = ' '.join(text.split())
-        
-        # Expand common abbreviations
-        expansions = {
+        # Normalize crypto terms
+        crypto_normalizations = {
             'btc': 'bitcoin',
             'eth': 'ethereum',
             'crypto': 'cryptocurrency',
             'defi': 'decentralized finance',
             'nft': 'non fungible token',
-            'dao': 'decentralized autonomous organization'
+            'hodl': 'hold',
+            'fomo': 'fear of missing out'
         }
         
-        for abbr, full in expansions.items():
-            text = text.replace(abbr, full)
+        for abbrev, full_term in crypto_normalizations.items():
+            processed = re.sub(r'\b' + abbrev + r'\b', full_term, processed)
         
-        return text
-    
+        # Remove extra whitespace
+        processed = re.sub(r'\s+', ' ', processed)
+        
+        return processed
+
     def try_keyword_matching(self, user_input: str) -> Optional[str]:
-        """Try to match based on keywords for common patterns"""
-        user_input = user_input.lower()
+        """Try to match using crypto-specific keywords"""
+        keyword_patterns = {
+            r'\b(hello|hi|hey)\b': [
+                "Hello! I'm here to help with all your crypto questions!",
+                "Hi there! Ready to explore the world of cryptocurrency?",
+                "Hey! I'm your crypto assistant. What would you like to know?"
+            ],
+            r'\b(bye|goodbye|see you)\b': [
+                "Goodbye! Keep HODLing and happy trading!",
+                "See you later! May your portfolio be ever green!",
+                "Bye! Remember to always DYOR (Do Your Own Research)!"
+            ],
+            r'\b(price|cost|value).*bitcoin\b': [
+                "Bitcoin's price is highly volatile and changes constantly. I recommend checking live price feeds on CoinGecko or CoinMarketCap for real-time data.",
+                "Bitcoin prices fluctuate based on market demand, adoption, and various economic factors. Always check current prices before making decisions."
+            ],
+            r'\b(what.*is|explain).*bitcoin\b': [
+                "Bitcoin is a decentralized digital currency that operates on a peer-to-peer network without central authority.",
+                "Bitcoin is the first and largest cryptocurrency, created by Satoshi Nakamoto in 2009."
+            ]
+        }
         
-        # Greeting patterns
-        if any(greeting in user_input for greeting in ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']):
-            greetings = [conv['bot'] for conv in self.conversations if any(g in conv['user'].lower() for g in ['hello', 'hi', 'hey', 'good morning'])]
-            if greetings:
-                return random.choice(greetings)
-        
-        # Name patterns
-        if any(name_word in user_input for name_word in ['name', 'who are you', 'what are you']):
-            name_responses = [conv['bot'] for conv in self.conversations if any(n in conv['user'].lower() for n in ['name', 'who', 'what'])]
-            if name_responses:
-                return random.choice(name_responses)
-        
-        # Goodbye patterns
-        if any(goodbye in user_input for goodbye in ['goodbye', 'bye', 'see you', 'farewell', 'thanks', 'thank you']):
-            goodbyes = [conv['bot'] for conv in self.conversations if any(g in conv['user'].lower() for g in ['goodbye', 'bye', 'thanks', 'thank you'])]
-            if goodbyes:
-                return random.choice(goodbyes)
+        for pattern, responses in keyword_patterns.items():
+            if re.search(pattern, user_input):
+                return random.choice(responses)
         
         return None
-    
-    def get_fallback_response(self, user_input: str) -> str:
-        """Get a contextual fallback response"""
-        user_input = user_input.lower()
+
+    def get_smart_fallback(self, user_input: str) -> str:
+        """Enhanced fallback responses based on input context"""
+        crypto_keywords = ['bitcoin', 'ethereum', 'crypto', 'blockchain', 'defi', 'trading', 'mining', 'wallet']
         
-        # Crypto-related fallbacks
-        if any(crypto_word in user_input for crypto_word in ['bitcoin', 'ethereum', 'crypto', 'blockchain', 'defi', 'trading', 'invest']):
-            crypto_responses = [
-                "That's an interesting crypto question! I'm always learning more about the cryptocurrency ecosystem.",
-                "Cryptocurrency is a fascinating topic! While I might not have that specific information, I'm happy to discuss other crypto concepts.",
-                "I love talking about crypto! While I don't have that exact answer, feel free to ask me about Bitcoin, Ethereum, or other cryptocurrencies."
+        # Check if input contains crypto terms
+        has_crypto_terms = any(keyword in user_input.lower() for keyword in crypto_keywords)
+        
+        if has_crypto_terms:
+            crypto_fallbacks = [
+                "That's an interesting crypto question! While I don't have specific data on that, I'd recommend checking reputable sources like CoinDesk or CoinTelegraph.",
+                "I'm still learning about that aspect of cryptocurrency. Could you rephrase your question or ask about something more specific?",
+                "That's a great crypto topic! For the most accurate and up-to-date information, I'd suggest consulting multiple reliable crypto resources."
             ]
-            return random.choice(crypto_responses)
+            return random.choice(crypto_fallbacks)
+        else:
+            general_fallbacks = [
+                "I'm focused on cryptocurrency topics. Feel free to ask me about Bitcoin, Ethereum, blockchain, or other crypto-related questions!",
+                "I specialize in crypto discussions. What would you like to know about cryptocurrency or blockchain technology?",
+                "Let's talk crypto! I'm here to help with questions about digital currencies, trading, and blockchain technology."
+            ]
+            return random.choice(general_fallbacks)
+
+    def get_response(self, user_input: str) -> Dict:
+        """Get response with enhanced metadata"""
+        response_text = self.find_best_response(user_input)
         
-        # General fallbacks
-        general_responses = [
-            "I'm here to help with your cryptocurrency questions! What would you like to know about crypto?",
-            "That's an interesting question! I specialize in cryptocurrency topics - feel free to ask me about Bitcoin, blockchain, or DeFi!",
-            "I'm still learning! Could you ask me something about cryptocurrency or blockchain technology?"
-        ]
-        return random.choice(general_responses)
-    
-    def get_training_stats(self) -> Dict:
-        """Get statistics about the training data"""
-        if not self.conversations:
-            return {}
-        
-        total_conversations = len(self.conversations)
-        avg_user_length = np.mean([len(conv['user']) for conv in self.conversations])
-        avg_bot_length = np.mean([len(conv['bot']) for conv in self.conversations])
+        # Determine response type based on matching method
+        if user_input.lower().strip() in self.response_cache:
+            response_type = "cached"
+        elif self.try_keyword_matching(user_input.lower()):
+            response_type = "keyword_match"
+        else:
+            response_type = "similarity_match"
         
         return {
-            'total_conversations': total_conversations,
-            'avg_user_length': avg_user_length,
-            'avg_bot_length': avg_bot_length,
-            'cache_size': len(self.response_cache),
-            'features': ['crypto_focused', 'enhanced_matching', 'keyword_recognition']
+            "message": response_text,
+            "type": f"normal_{response_type}",
+            "personality": "normal",
+            "confidence": 0.8,
+            "training_source": "enhanced_crypto_dataset"
         }
 
-def test_pure_trainer():
-    """Test the enhanced pure trainer"""
-    print("🧪 Testing Enhanced Pure Normal Trainer")
-    print("=" * 50)
-    
+    def get_training_info(self) -> Dict:
+        """Get information about the training status"""
+        return {
+            "type": "enhanced_dataset_training",
+            "conversations_loaded": len(self.conversations),
+            "vocab_size": self.vocab_size,
+            "cache_size": len(self.response_cache),
+            "features": [
+                "Crypto-focused responses",
+                "Enhanced similarity matching",
+                "Keyword pattern recognition",
+                "Smart fallback responses",
+                "Response caching",
+                "Context-aware preprocessing"
+            ]
+        }
+
+if __name__ == "__main__":
+    print("🧪 Testing Enhanced Normal Trainer")
     trainer = PureNormalTrainer()
     
-    # Show stats
-    stats = trainer.get_training_stats()
-    print(f"📊 Training Stats:")
-    for key, value in stats.items():
-        print(f"   {key}: {value}")
-    
-    # Test crypto-focused queries
-    test_queries = [
-        "Hello",
-        "Hi there",
-        "What's your name?",
+    test_inputs = [
+        "Hello!",
         "What is Bitcoin?",
-        "How do I buy crypto?",
+        "How do I buy cryptocurrency?",
         "Is crypto safe?",
-        "What is Ethereum?",
-        "What is DeFi?",
-        "How are you doing?",
-        "Should I invest in crypto?",
-        "What is blockchain?",
-        "Thanks for your help",
+        "Tell me about blockchain",
         "Goodbye!"
     ]
     
-    print(f"\n💬 Testing Crypto-Focused Conversations:")
-    for query in test_queries:
-        response = trainer.find_best_response(query)
-        print(f"User: {query}")
-        print(f"Bot: {response}")
-        print()
-
-if __name__ == "__main__":
-    test_pure_trainer()
+    for test_input in test_inputs:
+        response = trainer.get_response(test_input)
+        print(f"\nUser: {test_input}")
+        print(f"Bot: {response['message']}")
+        print(f"Type: {response['type']}")

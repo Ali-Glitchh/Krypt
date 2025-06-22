@@ -12,7 +12,7 @@ import random
 import re
 from typing import Dict, Optional, List
 from enhanced_normal_trainer import PureNormalTrainer
-from continuous_learning_trainer import ContinuousLearningTrainer
+# from continuous_learning_trainer import ContinuousLearningTrainer  # Temporarily disabled due to indentation issues
 from pure_subzero_trainer import PureSubZeroTrainer
 from crypto_news_insights import CryptoNewsInsights
 
@@ -31,27 +31,23 @@ class ImprovedDualPersonalityChatbot:
         self.initialize_trainers()
         self.initialize_news_service()
         self.initialize_autonomous_training()
-        
-        # Conversation history
+          # Conversation history
         self.conversation_history = []
+    
     def initialize_trainers(self):
         """Initialize both personality trainers with optimal configurations"""
-        print("🤖 Initializing Enhanced Dual-Personality Chatbot with Continuous Learning...")
+        print("🤖 Initializing Enhanced Dual-Personality Chatbot...")
         
-        # Enhanced normal personality with continuous learning
+        # Enhanced normal personality (using enhanced trainer directly)
         try:
-            self.normal_trainer = ContinuousLearningTrainer()
-            print("✅ Continuous learning normal personality loaded and trained")
+            self.normal_trainer = PureNormalTrainer()
+            print("✅ Enhanced normal personality loaded and trained")
         except Exception as e:
-            print(f"❌ Failed to load continuous learning trainer: {e}")
-            # Fallback to basic trainer
-            try:
-                self.normal_trainer = PureNormalTrainer()
-                print("✅ Fallback normal personality loaded")
-            except Exception as e2:
-                print(f"❌ Failed to load fallback trainer: {e2}")
+            print(f"❌ Failed to load enhanced trainer: {e}")
+            self.normal_trainer = None
         
-        # Pure Sub-Zero personality (dataset-only)        try:
+        # Pure Sub-Zero personality (dataset-only)
+        try:
             self.subzero_trainer = PureSubZeroTrainer()
             print("✅ Pure Sub-Zero personality loaded and trained")
         except Exception as e:

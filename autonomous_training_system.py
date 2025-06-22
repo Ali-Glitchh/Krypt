@@ -413,6 +413,32 @@ class AutonomousTrainingSystem:
             recommendations.append("Training system is performing well - continue current approach")
         
         return recommendations
+    
+    def record_interaction(self, user_input: str, bot_response: str, confidence: float, response_type: str, personality: str):
+        """Record an interaction for training analysis"""
+        interaction = {
+            'timestamp': time.time(),
+            'user_input': user_input,
+            'bot_response': bot_response,
+            'confidence': confidence,
+            'response_type': response_type,
+            'personality': personality
+        }
+        
+        # Store for later analysis
+        if not hasattr(self, 'recorded_interactions'):
+            self.recorded_interactions = []
+        
+        self.recorded_interactions.append(interaction)
+        
+        # Keep only recent interactions to avoid memory issues
+        if len(self.recorded_interactions) > 1000:
+            self.recorded_interactions = self.recorded_interactions[-500:]
+        
+        # Update quality scores
+        self.conversation_quality_scores.append(confidence)
+        if len(self.conversation_quality_scores) > 100:
+            self.conversation_quality_scores = self.conversation_quality_scores[-50:]
 
 def main():
     """Demo of autonomous training system"""

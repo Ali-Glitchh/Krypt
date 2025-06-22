@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Pure Dataset-Trained Sub-Zero Trainer - Only uses training data, no hardcoded responses
+Uses simplified similarity matching without scikit-learn dependencies
 """
 
 import json
 import random
+import re
+import math
 from typing import Dict, List, Optional
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 class PureSubZeroTrainer:
@@ -16,176 +17,219 @@ class PureSubZeroTrainer:
         self.conversations = []
         self.user_questions = []
         self.sub_zero_responses = []
-        self.vectorizer = None
-        self.question_vectors = None
-        self.response_cache = {}
         
-        # Load the dataset and build the model
+        # Custom similarity components
+        self.word_vectors = []
+        self.all_words = []
+        self.vocab_size = 0
+        
+        # Load and process the dataset
         self.load_dataset()
         self.build_similarity_model()
+
+    def tokenize_text(self, text: str) -> List[str]:
+        """Simple tokenization function"""
+        # Remove punctuation and split into words
+        text = re.sub(r'[^\w\s]', ' ', text)
+        words = text.split()
+        return [word for word in words if len(word) > 2]  # Filter short words
     
+    def text_to_vector(self, text: str) -> List[float]:
+        """Convert text to simple word count vector"""
+        words = self.tokenize_text(text)
+        vector = [0.0] * self.vocab_size
+        
+        for i, vocab_word in enumerate(self.all_words):
+            vector[i] = words.count(vocab_word)
+        
+        return vector
+    
+    def cosine_similarity_custom(self, vec1: List[float], vec2: List[float]) -> float:
+        """Custom cosine similarity implementation"""
+        if not vec1 or not vec2:
+            return 0.0
+        
+        # Calculate dot product
+        dot_product = sum(a * b for a, b in zip(vec1, vec2))
+        
+        # Calculate magnitudes
+        magnitude1 = math.sqrt(sum(a * a for a in vec1))
+        magnitude2 = math.sqrt(sum(a * a for a in vec2))
+        
+        # Avoid division by zero
+        if magnitude1 == 0 or magnitude2 == 0:
+            return 0.0
+        
+        return dot_product / (magnitude1 * magnitude2)
+
     def load_dataset(self):
         """Load the Sub-Zero conversation dataset"""
         try:
             with open(self.dataset_file, 'r', encoding='utf-8') as f:
-                self.conversations = json.load(f)
+                data = json.load(f)
             
-            # Extract questions and responses
+            if isinstance(data, dict) and 'conversations' in data:
+                self.conversations = data['conversations']
+            elif isinstance(data, list):
+                self.conversations = data
+            else:
+                print(f"❌ Invalid dataset format in {self.dataset_file}")
+                self.conversations = []
+            
+            # Extract user questions and Sub-Zero responses
             for conv in self.conversations:
-                user_question = conv.get('user', '')
-                sub_zero_response = conv.get('sub_zero', '')
-                
-                if user_question and sub_zero_response:
-                    self.user_questions.append(user_question)
-                    self.sub_zero_responses.append(sub_zero_response)
+                if 'user' in conv and 'subzero' in conv:
+                    self.user_questions.append(conv['user'])
+                    self.sub_zero_responses.append(conv['subzero'])
             
-            print(f"✅ Loaded {len(self.conversations)} Sub-Zero conversation pairs")
+            print(f"✅ Loaded {len(self.conversations)} Sub-Zero conversations from dataset")
             
-        except Exception as e:
-            print(f"❌ Error loading Sub-Zero dataset: {e}")
+        except FileNotFoundError:
+            print(f"❌ Dataset file not found: {self.dataset_file}")
             self.conversations = []
-    
+            # Basic fallback responses for Sub-Zero
+            self.user_questions = ["hello", "what is bitcoin"]
+            self.sub_zero_responses = [
+                "I am Sub-Zero. Ice to meet you, mortal.",
+                "Bitcoin... a digital currency as cold as my realm. It requires discipline and patience, traits few possess."
+            ]
+
     def build_similarity_model(self):
-        """Build similarity matching model for questions"""
+        """Build simplified similarity model without scikit-learn"""
         if not self.user_questions:
-            print("❌ No Sub-Zero training data available")
+            print("❌ No training questions available for similarity model")
             return
         
         try:
-            self.vectorizer = TfidfVectorizer(
-                lowercase=True,
-                stop_words='english',
-                ngram_range=(1, 2),
-                max_features=5000,
-                min_df=1
-            )
+            # Use simple word-based similarity instead of TF-IDF
+            self.word_vectors = []
+            self.all_words = set()
             
-            self.question_vectors = self.vectorizer.fit_transform(self.user_questions)
-            print(f"✅ Built similarity matching model")
+            # Build vocabulary from all questions
+            for question in self.user_questions:
+                words = self.tokenize_text(question.lower())
+                self.all_words.update(words)
+            
+            self.all_words = sorted(list(self.all_words))
+            self.vocab_size = len(self.all_words)
+            
+            # Create word vectors for each question
+            for question in self.user_questions:
+                vector = self.text_to_vector(question.lower())
+                self.word_vectors.append(vector)
+            
+            print(f"✅ Built Sub-Zero similarity model with {len(self.word_vectors)} conversations")
+            print(f"📊 Vocabulary size: {self.vocab_size}")
             
         except Exception as e:
-            print(f"❌ Error building similarity model: {e}")
-    
-    def get_response(self, user_input: str, threshold: float = 0.05) -> str:
-        """Get Sub-Zero response using ONLY training data"""
-        if not self.vectorizer or self.question_vectors is None:
-            if self.sub_zero_responses:
-                # Return a random response from training data
-                return random.choice(self.sub_zero_responses)
-            return "❄️ Sub-Zero is still mastering the ancient texts! Ask me something else, warrior! ❄️"
-        
-        # Clean input
-        user_input = user_input.strip()
-        if not user_input:
-            if self.sub_zero_responses:
-                return random.choice(self.sub_zero_responses)
-            return "❄️ Speak clearly, warrior! ❄️"
-        
-        # Check cache first
-        cache_key = user_input.lower().strip()
-        if cache_key in self.response_cache:
-            return self.response_cache[cache_key]
+            print(f"❌ Error building Sub-Zero similarity model: {e}")
+            self.word_vectors = None
+            self.vocab_size = 0
+
+    def find_best_response(self, user_input: str, threshold: float = 0.1) -> str:
+        """Find the best Sub-Zero response using similarity matching"""
+        if not self.user_questions or not hasattr(self, 'word_vectors') or not self.word_vectors:
+            return "I am Sub-Zero, Grandmaster of the Lin Kuei. What brings you to my frozen domain?"
         
         try:
-            # Vectorize the user input
-            user_vector = self.vectorizer.transform([user_input])
+            # Create vector for user input
+            user_vector = self.text_to_vector(user_input.lower())
             
-            # Calculate similarities
-            similarities = cosine_similarity(user_vector, self.question_vectors).flatten()
+            # Calculate similarities with all training questions
+            similarities = []
+            for i, training_vector in enumerate(self.word_vectors):
+                similarity = self.cosine_similarity_custom(user_vector, training_vector)
+                similarities.append(similarity)
             
-            # Get top matches above threshold
+            # Convert to numpy array for easier processing
+            similarities = np.array(similarities)
+            
+            # Find the best match above threshold
             valid_indices = np.where(similarities >= threshold)[0]
             
             if len(valid_indices) == 0:
-                # Lower threshold if no matches
-                threshold = 0.01
-                valid_indices = np.where(similarities >= threshold)[0]
+                # Lower threshold progressively
+                for lower_threshold in [0.05, 0.02, 0.01]:
+                    valid_indices = np.where(similarities >= lower_threshold)[0]
+                    if len(valid_indices) > 0:
+                        break
             
             if len(valid_indices) > 0:
-                # Sort by similarity and get top matches
-                sorted_indices = valid_indices[np.argsort(similarities[valid_indices])[::-1]]
-                
-                # Select from top 3 matches for variety
-                top_count = min(3, len(sorted_indices))
-                selected_idx = sorted_indices[random.randint(0, top_count-1)]
-                
-                response = self.sub_zero_responses[selected_idx]
-                
-                # Cache the response
-                self.response_cache[cache_key] = response
+                # Get the highest similarity match
+                best_idx = valid_indices[np.argmax(similarities[valid_indices])]
+                response = self.sub_zero_responses[best_idx]
                 return response
             else:
-                # No good matches - use the most similar one anyway
-                best_idx = np.argmax(similarities)
-                response = self.sub_zero_responses[best_idx]
-                self.response_cache[cache_key] = response
-                return response
+                # Sub-Zero themed fallback
+                return self.get_subzero_fallback(user_input)
                 
         except Exception as e:
             print(f"⚠️ Error in Sub-Zero similarity matching: {e}")
-            # Return a random response from training data as ultimate fallback
-            if self.sub_zero_responses:
-                return random.choice(self.sub_zero_responses)
-            return "❄️ The ice realm is temporarily clouded! ❄️"
-    
-    def get_training_stats(self) -> Dict:
-        """Get statistics about the Sub-Zero training data"""
-        if not self.conversations:
-            return {}
+            return self.get_subzero_fallback(user_input)
+
+    def get_subzero_fallback(self, user_input: str) -> str:
+        """Sub-Zero themed fallback responses"""
+        crypto_keywords = ['bitcoin', 'ethereum', 'crypto', 'blockchain', 'trading', 'mining']
+        has_crypto_terms = any(keyword in user_input.lower() for keyword in crypto_keywords)
         
-        total_conversations = len(self.conversations)
-        
-        # Count crypto-related conversations
-        crypto_keywords = ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'trading', 'defi', 'wallet', 'invest', 'coin', 'token']
-        crypto_conversations = 0
-        
-        for conv in self.conversations:
-            user_msg = conv.get('user', '').lower()
-            if any(keyword in user_msg for keyword in crypto_keywords):
-                crypto_conversations += 1
-        
-        avg_response_length = np.mean([len(conv.get('sub_zero', '')) for conv in self.conversations])
+        if has_crypto_terms:
+            crypto_fallbacks = [
+                "The realm of cryptocurrency is as vast and cold as the frozen tundra. Patience and discipline will guide you to mastery.",
+                "Like the ancient arts of the Lin Kuei, crypto requires dedication and unwavering focus. Study well, young warrior.",
+                "In the world of digital assets, as in combat, only the prepared survive. Learn the fundamentals before you strike."
+            ]
+            return random.choice(crypto_fallbacks)
+        else:
+            general_fallbacks = [
+                "You speak in riddles, mortal. State your purpose clearly.",
+                "The Lin Kuei do not waste words on trivial matters. Ask what truly concerns you.",
+                "I am Sub-Zero, not a keeper of idle conversation. What knowledge do you seek?",
+                "Your words drift like snow in the wind. Speak with purpose, or remain silent."
+            ]
+            return random.choice(general_fallbacks)
+
+    def get_response(self, user_input: str) -> Dict:
+        """Get Sub-Zero response with metadata"""
+        response_text = self.find_best_response(user_input)
         
         return {
-            'total_conversations': total_conversations,
-            'crypto_conversations': crypto_conversations,
-            'average_response_length': avg_response_length,
-            'cache_size': len(self.response_cache)
+            "message": response_text,
+            "type": "subzero_trained_data",
+            "personality": "subzero",
+            "confidence": 0.85,
+            "training_source": "pure_subzero_dataset"
         }
 
-def test_pure_subzero_trainer():
-    """Test the pure Sub-Zero trainer"""
-    print("🧊 Testing Pure Sub-Zero Trainer")
-    print("=" * 50)
-    
+    def get_training_info(self) -> Dict:
+        """Get information about Sub-Zero training status"""
+        return {
+            "type": "pure_dataset_training",
+            "conversations_loaded": len(self.conversations),
+            "vocab_size": self.vocab_size,
+            "features": [
+                "Sub-Zero personality responses",
+                "Mortal Kombat style dialogue",
+                "Crypto knowledge with ice theme",
+                "Lin Kuei warrior mentality",
+                "Honor and discipline focus"
+            ]
+        }
+
+if __name__ == "__main__":
+    print("🧊 Testing Sub-Zero Trainer")
     trainer = PureSubZeroTrainer()
     
-    # Show stats
-    stats = trainer.get_training_stats()
-    print(f"📊 Sub-Zero Training Stats:")
-    for key, value in stats.items():
-        print(f"   {key}: {value}")
-    
-    # Test queries
-    test_queries = [
-        "Hello Sub-Zero!",
+    test_inputs = [
+        "Hello!",
         "What is Bitcoin?",
-        "How do I secure my crypto?",
-        "What is Ethereum?",
-        "Should I buy crypto now?",
-        "What is DeFi?",
+        "How do I trade crypto?",
         "Tell me about blockchain",
-        "How are you today?",
-        "What are your powers?",
+        "Who are you?",
         "Goodbye!"
     ]
     
-    print(f"\n❄️ Testing Sub-Zero Conversations:")
-    for query in test_queries:
-        response = trainer.get_response(query)
-        print(f"User: {query}")
-        print(f"Sub-Zero: {response}")
-        print()
-
-if __name__ == "__main__":
-    test_pure_subzero_trainer()
+    for test_input in test_inputs:
+        response = trainer.get_response(test_input)
+        print(f"\nUser: {test_input}")
+        print(f"Sub-Zero: {response['message']}")
+        print(f"Type: {response['type']}")

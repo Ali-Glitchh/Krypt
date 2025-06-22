@@ -14,11 +14,9 @@ from typing import Dict, List, Tuple, Optional
 from datetime import datetime, timedelta
 import threading
 import pickle
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 import random
+import re
+import math
 
 class AdvancedTrainingSystem:
     def __init__(self, chatbot_instance=None):
