@@ -1,0 +1,42 @@
+graph TB
+    subgraph "Frontend Layer"
+        UI[Streamlit Web Interface]
+        UX[User Experience Layer]
+    end
+    
+    subgraph "Application Layer"
+        CM[Chatbot Manager]
+        PM[Personality Manager]
+        TM[Training Manager]
+    end
+    
+    subgraph "Core Services"
+        NLP[NLP Engine]
+        ML[Machine Learning]
+        API[API Integration]
+    end
+    
+    subgraph "Data Layer"
+        TD[Training Data]
+        CD[Conversation Data]
+        MD[Market Data]
+    end
+    
+    subgraph "External Services"
+        CG[CoinGecko API]
+        CC[CryptoCompare API]
+        NEWS[News Services]
+    end
+    
+    UI --> CM
+    UX --> PM
+    CM --> NLP
+    PM --> ML
+    TM --> ML
+    NLP --> API
+    ML --> TD
+    API --> CG
+    API --> CC
+    API --> NEWS
+    TD --> CD
+    CD --> MD

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KoinToss FYP - Converted Diagrams</title>
+    <style>
+        body { 
+            font-family: 'Times New Roman', serif; 
+            margin: 40px; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #2c3e50; 
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .diagram-section { 
+            margin: 40px 0; 
+            padding: 20px; 
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .diagram-title { 
+            color: #34495e; 
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .diagram-image { 
+            text-align: center; 
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        .diagram-image img { 
+            max-width: 100%; 
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .diagram-description {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .usage-instructions {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .usage-instructions h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .file-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>KoinToss FYP Report - System Diagrams</h1>
+        
+        <div class="usage-instructions">
+            <h3>📋 How to Use These Diagrams in Your Word Document</h3>
+            <ol>
+                <li>Right-click on any diagram image below and select "Save image as..."</li>
+                <li>Save the image with a descriptive name (e.g., "Figure1_SystemArchitecture.png")</li>
+                <li>In your Word document, find the diagram placeholder</li>
+                <li>Insert the image: Insert → Pictures → This Device</li>
+                <li>Add a caption: Right-click → Insert Caption → "Figure X: [Description]"</li>
+                <li>Resize and center the image as needed</li>
+            </ol>
+        </div>
+
+        <div class="diagram-section">
+            <div class="diagram-title">Figure 1: System Architecture Overview</div>
+            
+            <div class="diagram-description">
+                This diagram illustrates the comprehensive system architecture of KoinToss, showing the modular design with distinct layers for frontend, application logic, core services, data management, and external API integration.
+            </div>
+            
+            <div class="diagram-image">
+                <img src="diagram_1_graph.png" alt="System Architecture Overview" />
+                <div class="file-info">Image file: diagram_1_graph.png</div>
+            </div>
+        </div>
+
+        <div class="usage-instructions">
+            <h3>📝 Suggested Figure Captions for Word Document</h3>
+            <ul>
+                <li><strong>Figure 1:</strong> KoinToss System Architecture - Overview of the modular, layered architecture showing frontend, application, core services, data layer, and external API integration.</li>
+                <li><strong>Figure 2:</strong> High-Level System Components - Detailed view of the application layer components including personality manager, training manager, and API manager with their interconnections.</li>
+                <li><strong>Figure 3:</strong> Dual Personality Flow Diagram - Process flow showing how user input is parsed, routed to appropriate personality trainer, and response generation workflow.</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 2px solid #ecf0f1;">
+            <p style="color: #7f8c8d; font-style: italic;">
+                Generated on {time.strftime('%B %d, %Y at %I:%M %p')}<br>
+                KoinToss FYP Report - Diagram Conversion Complete
+            </p>
+        </div>
+    </div>
+</body>
+</html>

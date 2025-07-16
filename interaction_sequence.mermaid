@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant A as API Server
+    participant C as Chatbot
+    participant T as Trainer
+    participant D as Data Sources
+
+    U->>+F: Open Chat Interface
+    F->>+A: Initialize Session
+    A->>+C: Load Chatbot
+    C->>+T: Load Personalities
+    T-->>-C: Normal & SubZero Ready
+    C-->>-A: Chatbot Ready
+    A-->>-F: Session Created
+    F-->>-U: Interface Ready
+
+    loop Chat Interaction
+        U->>+F: Send Message
+        F->>+A: POST /chat
+        A->>+C: Process Message
+        
+        alt Market Data Needed
+            C->>+D: Fetch Crypto Data
+            D-->>-C: Return Market Info
+        end
+        
+        C->>+T: Generate Response
+        T-->>-C: Personality Response
+        C-->>-A: Final Response
+        A-->>-F: JSON Response
+        F-->>-U: Display Message
+    end

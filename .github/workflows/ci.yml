@@ -1,0 +1,189 @@
+name: KoinToss CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, '3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov flake8
+    
+    - name: Lint with flake8
+      run: |
+        # Stop build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings. Line length set to 88 (Black standard)
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+    
+    - name: Test core components
+      run: |
+        python test_core_components.py
+    
+    - name: Test enhanced features
+      run: |
+        python test_enhanced_features.py
+    
+    - name: Test KoinToss app
+      run: |
+        python test_kointoss_app.py
+    
+    - name: Run final verification
+      run: |
+        python final_verification_complete.py
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+        pip install -r requirements.txt
+    
+    - name: Run safety check
+      run: safety check
+    
+    - name: Run bandit security check
+      run: bandit -r . -f json -o bandit-report.json || true
+    
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: bandit-report.json
+
+  build-docs:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Validate README
+      run: |
+        # Check if README exists and has required sections
+        grep -q "# ⚔️ KoinToss" README.md
+        grep -q "## 🚀 Quick Start" README.md
+        grep -q "## 🤝 Contributing" README.md
+    
+    - name: Check documentation completeness
+      run: |
+        # Ensure all Python files have docstrings
+        python -c "
+        import ast
+        import sys
+        
+        def check_docstrings(filename):
+            with open(filename, 'r') as f:
+                tree = ast.parse(f.read())
+            
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                    if not ast.get_docstring(node):
+                        print(f'Missing docstring in {filename}: {node.name}')
+                        return False
+            return True
+        
+        files = ['improved_dual_personality_chatbot.py', 'enhanced_normal_trainer.py', 'api_utils.py']
+        all_good = all(check_docstrings(f) for f in files if __import__('os').path.exists(f))
+        sys.exit(0 if all_good else 1)
+        "
+
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install memory-profiler psutil
+    
+    - name: Performance test
+      run: |
+        python -c "
+        import time
+        import psutil
+        import os
+        
+        # Memory usage test
+        process = psutil.Process(os.getpid())
+        initial_memory = process.memory_info().rss / 1024 / 1024  # MB
+        
+        # Import main components
+        from improved_dual_personality_chatbot import DualPersonalityCryptoChatbot
+        
+        chatbot = DualPersonalityCryptoChatbot()
+        
+        # Test response time
+        start_time = time.time()
+        response = chatbot.chat('bitcoin price')
+        response_time = time.time() - start_time
+        
+        final_memory = process.memory_info().rss / 1024 / 1024  # MB
+        memory_usage = final_memory - initial_memory
+        
+        print(f'Response time: {response_time:.2f}s')
+        print(f'Memory usage: {memory_usage:.2f}MB')
+        
+        # Performance thresholds
+        assert response_time < 5.0, f'Response too slow: {response_time}s'
+        assert memory_usage < 500, f'Memory usage too high: {memory_usage}MB'
+        "
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [test, security, build-docs, performance]
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: needs.test.result == 'success' && needs.security.result == 'success'
+      run: |
+        echo "✅ All tests passed! KoinToss is ready for deployment."
+    
+    - name: Notify on failure
+      if: needs.test.result == 'failure' || needs.security.result == 'failure'
+      run: |
+        echo "❌ Tests failed. Please check the logs and fix issues before merging."
+        exit 1

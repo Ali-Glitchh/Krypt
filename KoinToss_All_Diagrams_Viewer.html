@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KoinToss All Diagrams Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .nav {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .nav button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .nav button.active {
+            background: #4c63d2;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .diagram-section {
+            display: none;
+            padding: 30px;
+        }
+        
+        .diagram-section.active {
+            display: block;
+        }
+        
+        .diagram-title {
+            color: #2d3436;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+            overflow-x: auto;
+        }
+        
+        .description {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .stats {
+            background: #f1f8e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .mermaid {
+            text-align: center;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        .file-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .file-list li {
+            background: #f8f9fa;
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 KoinToss Complete Diagram Collection</h1>
+            <p>All generated diagrams in one comprehensive view</p>
+        </div>
+        
+        <div class="nav">
+            <button onclick="showSection('overview')" class="active">📊 Overview</button>
+            <button onclick="showSection('structure')">🏗️ Structure</button>
+            <button onclick="showSection('flow')">🔄 Flow</button>
+            <button onclick="showSection('usecase')">🎯 Use Cases</button>
+            <button onclick="showSection('technical')">⚙️ Technical</button>
+            <button onclick="showSection('examples')">📝 Examples</button>
+        </div>
+        
+        <!-- Overview Section -->
+        <div id="overview" class="diagram-section active">
+            <h2 class="diagram-title">📊 Diagram Generation Overview</h2>
+            
+            <div class="stats">
+                <h3>📈 Generation Statistics</h3>
+                <p><strong>Total Diagrams Generated:</strong> 20+ different diagram types</p>
+                <p><strong>Mermaid Files:</strong> 15 interactive diagrams</p>
+                <p><strong>GraphViz DOT Files:</strong> 3 professional diagrams</p>
+                <p><strong>Interactive HTML:</strong> 2 web-based viewers</p>
+                <p><strong>Documentation:</strong> Comprehensive guides and examples</p>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>🎯 Code Analysis Diagrams</h3>
+                    <ul class="file-list">
+                        <li>class_diagram.mermaid</li>
+                        <li>enhanced_class_diagram.mermaid</li>
+                        <li>dependency_graph.mermaid</li>
+                        <li>dependency_network.mermaid</li>
+                        <li>complexity_heatmap.mermaid</li>
+                        <li>file_structure.mermaid</li>
+                        <li>call_flow.mermaid</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>🏗️ Architecture Diagrams</h3>
+                    <ul class="file-list">
+                        <li>architecture_flow.mermaid</li>
+                        <li>system_architecture.dot</li>
+                        <li>interaction_sequence.mermaid</li>
+                        <li>system_state.mermaid</li>
+                        <li>data_flow_detailed.mermaid</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>👤 User Experience Diagrams</h3>
+                    <ul class="file-list">
+                        <li>user_journey.mermaid</li>
+                        <li>use_case_diagram.mermaid</li>
+                        <li>conversation_flow.mermaid</li>
+                        <li>api_flow.mermaid</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>🎨 Professional Formats</h3>
+                    <ul class="file-list">
+                        <li>class_hierarchy.dot</li>
+                        <li>module_dependencies.dot</li>
+                        <li>KoinToss_D3_Interactive_Diagrams.html</li>
+                        <li>convert_diagrams.sh</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Structure Section -->
+        <div id="structure" class="diagram-section">
+            <h2 class="diagram-title">🏗️ System Structure Diagrams</h2>
+            
+            <div class="description">
+                <strong>Purpose:</strong> These diagrams show the structural organization of the KoinToss system, including class relationships, module dependencies, and file organization.
+            </div>
+            
+            <div class="diagram-container">
+                <h3>📁 File Structure</h3>
+                <div class="mermaid">
+graph TB
+    subgraph "Core Chatbot"
+        improved_dual_personality_chatbot[improved_dual_personality_chatbot.py]
+        pure_dual_personality_chatbot[pure_dual_personality_chatbot.py]
+        crypto_chatbot[crypto_chatbot.py]
+    end
+    
+    subgraph "API Layer"
+        enhanced_kointoss_api_server[enhanced_kointoss_api_server.py]
+        kointoss_api_server[kointoss_api_server.py]
+        api_server[api_server.py]
+    end
+    
+    subgraph "Training System"
+        advanced_autonomous_trainer[advanced_autonomous_trainer.py]
+        pure_normal_trainer[pure_normal_trainer.py]
+        pure_subzero_trainer[pure_subzero_trainer.py]
+    end
+    
+    subgraph "Frontend"
+        streamlit_app[streamlit_app.py]
+        iframe_app[iframe_app.py]
+    end
+                </div>
+            </div>
+            
+            <div class="diagram-container">
+                <h3>🔗 Class Relationships</h3>
+                <div class="mermaid">
+classDiagram
+    class ImprovedDualPersonalityChatbot {
+        +process_message(message)
+        +switch_personality(mode)
+        +get_response(input)
+    }
+    
+    class PureNormalTrainer {
+        +find_best_response(query)
+        +preprocess_message(text)
+        +load_dataset()
+    }
+    
+    class PureSubZeroTrainer {
+        +generate_subzero_response(query)
+        +load_subzero_dataset()
+        +train_model()
+    }
+    
+    class CryptoNewsInsights {
+        +get_crypto_news(symbol)
+        +analyze_sentiment(text)
+        +format_news_response(news)
+    }
+    
+    ImprovedDualPersonalityChatbot --> PureNormalTrainer
+    ImprovedDualPersonalityChatbot --> PureSubZeroTrainer
+    ImprovedDualPersonalityChatbot --> CryptoNewsInsights
+                </div>
+            </div>
+        </div>
+        
+        <!-- Flow Section -->
+        <div id="flow" class="diagram-section">
+            <h2 class="diagram-title">🔄 Process Flow Diagrams</h2>
+            
+            <div class="description">
+                <strong>Purpose:</strong> These diagrams illustrate how data and requests flow through the system, from user input to response generation.
+            </div>
+            
+            <div class="diagram-container">
+                <h3>💬 Conversation Flow</h3>
+                <div class="mermaid">
+flowchart TD
+    START([User Input]) --> VALIDATE{Valid Input?}
+    VALIDATE -->|Yes| PREPROCESS[Preprocess Message]
+    VALIDATE -->|No| ERROR[Show Error]
+    ERROR --> START
+    
+    PREPROCESS --> DETECT{Detect Intent}
+    DETECT -->|Market Query| MARKET[Fetch Market Data]
+    DETECT -->|News Request| NEWS[Get News]
+    DETECT -->|Chat| PERSONALITY{Current Mode?}
+    
+    MARKET --> PERSONALITY
+    NEWS --> PERSONALITY
+    
+    PERSONALITY -->|Normal| NORMAL[Normal Response]
+    PERSONALITY -->|SubZero| SUBZERO[SubZero Response]
+    
+    NORMAL --> DISPLAY[Display Response]
+    SUBZERO --> DISPLAY
+    DISPLAY --> START
+                </div>
+            </div>
+            
+            <div class="diagram-container">
+                <h3>🔌 API Request Flow</h3>
+                <div class="mermaid">
+sequenceDiagram
+    participant Client
+    participant API
+    participant Chatbot
+    participant Trainer
+    participant DataSources
+    
+    Client->>API: POST /chat
+    API->>API: Validate Request
+    API->>Chatbot: Process Message
+    Chatbot->>Trainer: Generate Response
+    Trainer->>DataSources: Fetch Data
+    DataSources-->>Trainer: Return Data
+    Trainer-->>Chatbot: Response Generated
+    Chatbot-->>API: Final Response
+    API-->>Client: JSON Response
+                </div>
+            </div>
+        </div>
+        
+        <!-- Use Case Section -->
+        <div id="usecase" class="diagram-section">
+            <h2 class="diagram-title">🎯 Use Case & User Journey</h2>
+            
+            <div class="description">
+                <strong>Purpose:</strong> These diagrams show how different types of users interact with the system and what functionality is available to each.
+            </div>
+            
+            <div class="diagram-container">
+                <h3>👥 User Types & Use Cases</h3>
+                <div class="mermaid">
+graph TB
+    subgraph Users[User Types]
+        GU[General User]
+        CE[Crypto Enthusiast]
+        DEV[Developer]
+        ADMIN[Admin]
+    end
+    
+    subgraph Features[Core Features]
+        CHAT[Chat with Bot]
+        SWITCH[Switch Personalities]
+        MARKET[Get Market Data]
+        NEWS[Crypto News]
+    end
+    
+    subgraph Advanced[Advanced Features]
+        API[API Integration]
+        EMBED[Widget Embedding]
+        TRAIN[Training Management]
+        ANALYTICS[Analytics]
+    end
+    
+    GU --> CHAT
+    GU --> NEWS
+    CE --> CHAT
+    CE --> SWITCH
+    CE --> MARKET
+    DEV --> API
+    DEV --> EMBED
+    ADMIN --> TRAIN
+    ADMIN --> ANALYTICS
+                </div>
+            </div>
+            
+            <div class="diagram-container">
+                <h3>🎭 Personality State Machine</h3>
+                <div class="mermaid">
+stateDiagram-v2
+    [*] --> Normal
+    Normal --> SubZero : switch_personality("subzero")
+    SubZero --> Normal : switch_personality("normal")
+    
+    Normal --> Processing : process_message()
+    SubZero --> Processing : process_message()
+    
+    Processing --> Normal : return_normal_response()
+    Processing --> SubZero : return_subzero_response()
+    
+    note right of Normal
+        Professional responses
+        Educational focus
+        Risk awareness
+    end note
+    
+    note right of SubZero
+        Crypto native slang
+        Bold predictions
+        Meme references
+    end note
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical Section -->
+        <div id="technical" class="diagram-section">
+            <h2 class="diagram-title">⚙️ Technical Architecture</h2>
+            
+            <div class="description">
+                <strong>Purpose:</strong> Technical diagrams showing system architecture, deployment, and internal component relationships.
+            </div>
+            
+            <div class="diagram-container">
+                <h3>🌐 System Architecture</h3>
+                <div class="mermaid">
+graph TB
+    subgraph "External"
+        USER[Users]
+        APIs[External APIs]
+    end
+    
+    subgraph "Frontend Layer"
+        WEB[Web Interface]
+        WIDGET[JavaScript Widget]
+        MOBILE[Mobile App]
+    end
+    
+    subgraph "API Gateway"
+        GATEWAY[FastAPI Server]
+        AUTH[Authentication]
+        RATE[Rate Limiting]
+    end
+    
+    subgraph "Core Services"
+        CHATBOT[Chatbot Engine]
+        TRAINER[Training System]
+        NEWS[News Service]
+    end
+    
+    subgraph "Data Layer"
+        CACHE[Redis Cache]
+        DB[Database]
+        FILES[File Storage]
+    end
+    
+    USER --> WEB
+    USER --> WIDGET
+    USER --> MOBILE
+    
+    WEB --> GATEWAY
+    WIDGET --> GATEWAY
+    MOBILE --> GATEWAY
+    
+    GATEWAY --> AUTH
+    GATEWAY --> RATE
+    GATEWAY --> CHATBOT
+    
+    CHATBOT --> TRAINER
+    CHATBOT --> NEWS
+    CHATBOT --> APIs
+    
+    CHATBOT --> CACHE
+    TRAINER --> DB
+    NEWS --> FILES
+                </div>
+            </div>
+            
+            <div class="diagram-container">
+                <h3>📊 Data Flow Architecture</h3>
+                <div class="mermaid">
+flowchart LR
+    subgraph Input[Data Input]
+        USER_MSG[User Messages]
+        MARKET_API[Market APIs]
+        NEWS_API[News APIs]
+    end
+    
+    subgraph Processing[Data Processing]
+        PREPROCESSOR[Message Preprocessor]
+        ANALYZER[Content Analyzer]
+        ROUTER[Personality Router]
+    end
+    
+    subgraph Storage[Data Storage]
+        HISTORY[Chat History]
+        TRAINING[Training Data]
+        CACHE[Response Cache]
+    end
+    
+    subgraph Output[Response Generation]
+        NORMAL_AI[Normal AI]
+        SUBZERO_AI[SubZero AI]
+        FORMATTER[Response Formatter]
+    end
+    
+    USER_MSG --> PREPROCESSOR
+    MARKET_API --> ANALYZER
+    NEWS_API --> ANALYZER
+    
+    PREPROCESSOR --> ROUTER
+    ANALYZER --> ROUTER
+    
+    ROUTER --> NORMAL_AI
+    ROUTER --> SUBZERO_AI
+    
+    NORMAL_AI --> FORMATTER
+    SUBZERO_AI --> FORMATTER
+    
+    FORMATTER --> HISTORY
+    ROUTER <--> TRAINING
+    FORMATTER --> CACHE
+                </div>
+            </div>
+        </div>
+        
+        <!-- Examples Section -->
+        <div id="examples" class="diagram-section">
+            <h2 class="diagram-title">📝 Usage Examples & Tools</h2>
+            
+            <div class="description">
+                <strong>Purpose:</strong> Examples of how to use, view, and integrate the generated diagrams into your workflow.
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h3>🌐 Online Viewers</h3>
+                    <p><strong>Mermaid Live:</strong> https://mermaid.live</p>
+                    <p><strong>PlantUML:</strong> http://www.plantuml.com/plantuml/</p>
+                    <p><strong>GraphViz Online:</strong> https://dreampuf.github.io/GraphvizOnline/</p>
+                </div>
+                
+                <div class="card">
+                    <h3>🛠️ VS Code Extensions</h3>
+                    <ul>
+                        <li>Mermaid Preview</li>
+                        <li>PlantUML</li>
+                        <li>GraphViz Preview</li>
+                        <li>Markdown Preview Enhanced</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>📁 Export Formats</h3>
+                    <ul>
+                        <li>PNG (raster images)</li>
+                        <li>SVG (scalable vectors)</li>
+                        <li>PDF (professional docs)</li>
+                        <li>HTML (interactive web)</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3>🔧 Generator Scripts</h3>
+                    <ul>
+                        <li>code_diagram_generator.py</li>
+                        <li>advanced_diagram_generator.py</li>
+                        <li>graphviz_dot_generator.py</li>
+                        <li>use_flow_diagram_generator.py</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="diagram-container">
+                <h3>💻 Command Line Examples</h3>
+                <pre><code># Generate basic diagrams
+python code_diagram_generator.py
+
+# Generate advanced diagrams with complexity analysis
+python advanced_diagram_generator.py
+
+# Generate professional DOT format diagrams
+python graphviz_dot_generator.py
+
+# Generate use case and flow diagrams
+python use_flow_diagram_generator.py
+
+# Convert DOT files to images (requires GraphViz)
+dot -Tpng class_hierarchy.dot -o class_hierarchy.png
+dot -Tsvg module_dependencies.dot -o module_dependencies.svg
+dot -Tpdf system_architecture.dot -o system_architecture.pdf</code></pre>
+            </div>
+            
+            <div class="diagram-container">
+                <h3>📝 Integration Examples</h3>
+                <pre><code># In Markdown documentation:
+```mermaid
+graph TD
+    A[User] --> B[Chatbot]
+    B --> C[Response]
+```
+
+# In HTML:
+&lt;div class="mermaid"&gt;
+graph TD
+    A --> B
+&lt;/div&gt;
+
+# In PlantUML:
+@startuml
+actor User
+User --> Chatbot
+Chatbot --> Response
+@enduml</code></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'neutral',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#2d3436',
+                primaryBorderColor: '#5a6fd8',
+                lineColor: '#636e72'
+            }
+        });
+        
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.diagram-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.nav button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+digraph SystemArchitecture {
+    rankdir=TB;
+    compound=true;
+    node [shape=box, style=filled];
+
+    subgraph cluster_0 {
+        label="Frontend Layer";
+        color=blue;
+        style=filled;
+        fillcolor=lightfrontend;
+        "autonomous_training_demo";
+        "comprehensive_demo";
+        "continuous_training_demo";
+        "demo_bot";
+        "iframe_app";
+        "interactive_demo";
+        "kointoss_streamlit_app";
+        "learning_capabilities_demo";
+        "quick_demo";
+        "streamlit_app";
+        "subzero_demo";
+        "test_streamlit_deps";
+        "test_streamlit_integration";
+        "training_demo";
+    }
+    subgraph cluster_1 {
+        label="API Layer";
+        color=blue;
+        style=filled;
+        fillcolor=lightapi;
+        "api_server";
+        "api_utils";
+        "enhanced_kointoss_api_server";
+        "kointoss_api_server";
+        "test_api_integration";
+    }
+    subgraph cluster_2 {
+        label="Core Layer";
+        color=blue;
+        style=filled;
+        fillcolor=lightcore;
+        "crypto_chatbot";
+        "crypto_chatbot_fixed";
+        "crypto_chatbot_fixed_subzero";
+        "crypto_chatbot_simple";
+        "dual_personality_intensive_trainer";
+        "enhanced_crypto_chatbot";
+        "final_dual_personality_chatbot";
+        "improved_dual_personality_chatbot";
+        "improved_dual_personality_chatbot_broken";
+        "improved_dual_personality_chatbot_fixed";
+        "pure_dual_personality_chatbot";
+        "quick_chatbot_test";
+        "quick_chatbot_test_fixed";
+        "simple_chatbot_test";
+        "subzero_personality_adapter";
+        "test_chatbot_with_news";
+        "test_improved_chatbot";
+        "test_personality_fix";
+        "test_pure_chatbot";
+        "test_simplified_chatbot";
+    }
+    subgraph cluster_3 {
+        label="Training Layer";
+        color=blue;
+        style=filled;
+        fillcolor=lighttraining;
+        "advanced_autonomous_trainer";
+        "advanced_subzero_trainer";
+        "advanced_subzero_trainer_fixed";
+        "autonomous_training_demo";
+        "autonomous_training_system";
+        "comprehensive_bot_trainer";
+        "continuous_learning_trainer";
+        "continuous_learning_trainer_backup";
+        "conversation_trainer";
+        "dual_personality_intensive_trainer";
+        "enhanced_normal_trainer";
+        "enhanced_normal_trainer_backup";
+        "enhanced_normal_trainer_corrupted";
+        "enhanced_normal_trainer_fixed";
+        "enhanced_normal_trainer_v2";
+        "normal_conversation_trainer";
+        "pure_normal_trainer";
+        "pure_subzero_trainer";
+        "pure_subzero_trainer_backup";
+        "start_autonomous_training";
+        "subzero_conversation_trainer";
+        "verify_autonomous_training";
+    }
+    subgraph cluster_4 {
+        label="Data Layer";
+        color=blue;
+        style=filled;
+        fillcolor=lightdata;
+        "crypto_news_insights";
+        "generate_subzero_dataset";
+    }
+    "Frontend" -> "API" [style=bold, color=red];
+    "API" -> "Core" [style=bold, color=red];
+    "Core" -> "Training" [style=bold, color=red];
+    "Training" -> "Data" [style=bold, color=red];
+}

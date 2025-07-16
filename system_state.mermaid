@@ -1,0 +1,56 @@
+stateDiagram-v2
+    [*] --> Initializing
+    
+    Initializing --> Loading : Start System
+    Loading --> Ready : All Components Loaded
+    Loading --> Error : Load Failed
+    
+    Ready --> Processing : Receive Request
+    Ready --> Training : Background Training
+    Ready --> Maintenance : Admin Request
+    
+    Processing --> NormalMode : Normal Personality Selected
+    Processing --> SubZeroMode : SubZero Personality Selected
+    Processing --> Error : Processing Failed
+    
+    NormalMode --> Responding : Generate Response
+    SubZeroMode --> Responding : Generate Response
+    
+    Responding --> Ready : Response Sent
+    Responding --> Error : Response Failed
+    
+    Training --> ModelUpdate : New Data Available
+    Training --> Ready : Training Complete
+    
+    ModelUpdate --> Validating : Test Model
+    Validating --> Ready : Validation Passed
+    Validating --> Training : Validation Failed
+    
+    Maintenance --> Updating : Apply Updates
+    Maintenance --> Monitoring : Check Health
+    Maintenance --> Backup : Create Backup
+    
+    Updating --> Ready : Update Complete
+    Monitoring --> Ready : Health OK
+    Monitoring --> Error : Health Issues
+    Backup --> Ready : Backup Complete
+    
+    Error --> Recovering : Auto Recovery
+    Error --> Shutdown : Critical Error
+    
+    Recovering --> Ready : Recovery Successful
+    Recovering --> Shutdown : Recovery Failed
+    
+    Shutdown --> [*]
+
+    note right of NormalMode
+        Professional responses
+        Educational focus
+        Risk awareness
+    end note
+
+    note right of SubZeroMode
+        Crypto native slang
+        Bold predictions
+        Meme references
+    end note

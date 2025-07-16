@@ -1,0 +1,309 @@
+classDiagram
+    direction TB
+    class AdvancedAutonomousTrainer:::high-complexity
+    AdvancedAutonomousTrainer : +complexity: 13
+    AdvancedAutonomousTrainer : 🔒__init__(self, chatbot)
+    AdvancedAutonomousTrainer : 🔓initialize_dynamic_scenarios(self)
+    AdvancedAutonomousTrainer : 🔓fetch_real_time_data(self)
+    AdvancedAutonomousTrainer : 🔓analyze_market_sentiment(self, market_data)
+    AdvancedAutonomousTrainer : 🔓generate_contextual_training_data(self, real_time_data)
+    AdvancedAutonomousTrainer : 🔓self_evaluate_response(self, question, response)
+    AdvancedAutonomousTrainer : 🔓continuous_learning_cycle(self)
+    AdvancedAutonomousTrainer : 🔓analyze_learning_progress(self)
+    AdvancedAutonomousTrainer : 🔓adapt_training_parameters(self)
+    AdvancedAutonomousTrainer : 🔓start_autonomous_training(self)
+    AdvancedAutonomousTrainer : 🔓stop_autonomous_training(self)
+    AdvancedAutonomousTrainer : 🔓get_training_statistics(self)
+    AdvancedAutonomousTrainer : 🔓export_training_data(self, filename)
+    class AdvancedDiagramGenerator:::medium-complexity
+    AdvancedDiagramGenerator : +complexity: 10
+    AdvancedDiagramGenerator : 🔒__init__(self, project_root)
+    AdvancedDiagramGenerator : 🔓scan_project(self)
+    AdvancedDiagramGenerator : 🔓analyze_file(self, file_path)
+    AdvancedDiagramGenerator : 🔓generate_enhanced_class_diagram(self)
+    AdvancedDiagramGenerator : 🔓generate_architecture_flow_diagram(self)
+    AdvancedDiagramGenerator : 🔓generate_interaction_sequence(self)
+    AdvancedDiagramGenerator : 🔓generate_complexity_heatmap(self)
+    AdvancedDiagramGenerator : 🔓generate_dependency_network(self)
+    AdvancedDiagramGenerator : 🔓export_diagrams(self)
+    AdvancedDiagramGenerator : 🔓generate_interactive_html(self)
+    class CodeVisitor:::medium-complexity
+    CodeVisitor : +complexity: 6
+    CodeVisitor : 🔒__init__(self, filename)
+    CodeVisitor : 🔓visit_ClassDef(self, node)
+    CodeVisitor : 🔓visit_FunctionDef(self, node)
+    CodeVisitor : 🔓visit_Import(self, node)
+    CodeVisitor : 🔓visit_ImportFrom(self, node)
+    CodeVisitor : 🔒_calculate_complexity(self, node)
+    Unknown <|-- CodeVisitor
+    class AdvancedTrainingSystem:::high-complexity
+    AdvancedTrainingSystem : +complexity: 13
+    AdvancedTrainingSystem : 🔒__init__(self, chatbot_instance)
+    AdvancedTrainingSystem : 🔓start_background_training(self)
+    AdvancedTrainingSystem : 🔓stop_background_training(self)
+    AdvancedTrainingSystem : 🔒_background_training_loop(self)
+    AdvancedTrainingSystem : 🔓record_interaction(self, user_input, bot_response...)
+    AdvancedTrainingSystem : 🔓assess_interaction_quality(self, interaction)
+    AdvancedTrainingSystem : 🔓collect_user_feedback(self, interaction_index, satisfaction_rating...)
+    AdvancedTrainingSystem : 🔓train_from_interactions(self)
+    AdvancedTrainingSystem : 🔓save_training_session(self, training_data)
+    AdvancedTrainingSystem : 🔓optimize_trainer_parameters(self)
+    AdvancedTrainingSystem : 🔓get_success_rate(self)
+    AdvancedTrainingSystem : 🔓get_training_statistics(self)
+    AdvancedTrainingSystem : 🔓manual_training_cycle(self)
+    class CryptoAPIs:::low-complexity
+    CryptoAPIs : +complexity: 4
+    CryptoAPIs : 🔒__init__(self)
+    CryptoAPIs : 🔓initialize_apis(self)
+    CryptoAPIs : 🔓get_markets_data(self)
+    CryptoAPIs : 🔓get_coin_price(self, coin_id)
+    class AutonomousTrainingSystem:::high-complexity
+    AutonomousTrainingSystem : +complexity: 17
+    AutonomousTrainingSystem : 🔒__init__(self, chatbot)
+    AutonomousTrainingSystem : 🔓generate_training_scenarios(self)
+    AutonomousTrainingSystem : 🔓start_autonomous_training(self)
+    AutonomousTrainingSystem : 🔓stop_autonomous_training(self)
+    AutonomousTrainingSystem : 🔒_training_loop(self)
+    AutonomousTrainingSystem : 🔒_run_training_session(self)
+    AutonomousTrainingSystem : 🔒_evaluate_response_quality(self, question, response...)
+    AutonomousTrainingSystem : 🔒_attempt_improvement(self, question, response...)
+    AutonomousTrainingSystem : 🔒_generate_question_variations(self, question)
+    AutonomousTrainingSystem : 🔒_measure_accuracy(self)
+    AutonomousTrainingSystem : 🔒_save_training_progress(self)
+    AutonomousTrainingSystem : 🔓get_training_status(self)
+    AutonomousTrainingSystem : 🔓get_improvement_recommendations(self)
+    AutonomousTrainingSystem : 🔓record_interaction(self, user_input, bot_response...)
+    AutonomousTrainingSystem : 🔓get_training_statistics(self)
+    AutonomousTrainingSystem : 🔓get_recent_activities(self)
+    AutonomousTrainingSystem : 🔓run_single_training_iteration(self)
+    class CodeAnalyzer:::high-complexity
+    CodeAnalyzer : +complexity: 11
+    CodeAnalyzer : 🔒__init__(self, project_root)
+    CodeAnalyzer : 🔓scan_project(self)
+    CodeAnalyzer : 🔓analyze_file(self, file_path)
+    CodeAnalyzer : 🔓analyze_class(self, node)
+    CodeAnalyzer : 🔓analyze_function(self, node)
+    CodeAnalyzer : 🔓analyze_import(self, node)
+    CodeAnalyzer : 🔓generate_class_diagram_mermaid(self)
+    CodeAnalyzer : 🔓generate_dependency_graph_mermaid(self)
+    CodeAnalyzer : 🔓generate_file_structure_mermaid(self)
+    CodeAnalyzer : 🔓generate_call_flow_diagram(self, entry_point)
+    CodeAnalyzer : 🔓export_analysis_report(self, output_file)
+    class CryptoNewsInsights:::medium-complexity
+    CryptoNewsInsights : +complexity: 9
+    CryptoNewsInsights : 🔒__init__(self)
+    CryptoNewsInsights : 🔓get_latest_news(self, topic, limit)
+    CryptoNewsInsights : 🔒_fetch_coingecko_news(self, topic, limit)
+    CryptoNewsInsights : 🔒_get_mock_news(self, topic, limit)
+    CryptoNewsInsights : 🔓analyze_sentiment(self, text)
+    CryptoNewsInsights : 🔓get_market_insights(self, personality)
+    CryptoNewsInsights : 🔒_generate_enhanced_normal_insights(self, articles, strong_bull...)
+    CryptoNewsInsights : 🔒_generate_enhanced_subzero_insights(self, articles, strong_bull...)
+    CryptoNewsInsights : 🔓get_specific_coin_news(self, coin, personality)
+    class DualPersonalityAdvancedTrainer:::high-complexity
+    DualPersonalityAdvancedTrainer : +complexity: 16
+    DualPersonalityAdvancedTrainer : 🔒__init__(self, chatbot)
+    DualPersonalityAdvancedTrainer : 🔓create_normal_personality_scenarios(self)
+    DualPersonalityAdvancedTrainer : 🔓create_subzero_personality_scenarios(self)
+    DualPersonalityAdvancedTrainer : 🔓create_shared_scenarios(self)
+    DualPersonalityAdvancedTrainer : 🔓fetch_enhanced_market_data(self)
+    DualPersonalityAdvancedTrainer : 🔓analyze_market_conditions(self, market_data)
+    DualPersonalityAdvancedTrainer : 🔓generate_personality_specific_training(self, personality, market_data)
+    DualPersonalityAdvancedTrainer : 🔓evaluate_personality_response(self, question, response...)
+    DualPersonalityAdvancedTrainer : 🔓cross_personality_training_cycle(self)
+    DualPersonalityAdvancedTrainer : 🔓intensive_dual_training_cycle(self)
+    DualPersonalityAdvancedTrainer : 🔓calculate_learning_velocities(self)
+    DualPersonalityAdvancedTrainer : 🔓report_training_progress(self, cycle_count)
+    DualPersonalityAdvancedTrainer : 🔓start_intensive_training(self)
+    DualPersonalityAdvancedTrainer : 🔓stop_training(self)
+    DualPersonalityAdvancedTrainer : 🔓get_comprehensive_stats(self)
+    DualPersonalityAdvancedTrainer : 🔓export_dual_training_data(self, filename)
+    class SessionManager:::low-complexity
+    SessionManager : +complexity: 5
+    SessionManager : 🔒__init__(self)
+    SessionManager : 🔓create_session(self, session_id)
+    SessionManager : 🔓get_session(self, session_id)
+    SessionManager : 🔓update_session(self, session_id, data)
+    SessionManager : 🔓cleanup_expired_sessions(self)
+    class RateLimiter:::low-complexity
+    RateLimiter : +complexity: 2
+    RateLimiter : 🔒__init__(self)
+    RateLimiter : 🔓is_allowed(self, client_id)
+    class ChatRequest:::low-complexity
+    ChatRequest : +complexity: 0
+    BaseModel <|-- ChatRequest
+    class ChatResponse:::low-complexity
+    ChatResponse : +complexity: 0
+    BaseModel <|-- ChatResponse
+    class PersonalityRequest:::low-complexity
+    PersonalityRequest : +complexity: 0
+    BaseModel <|-- PersonalityRequest
+    class SessionInfo:::low-complexity
+    SessionInfo : +complexity: 0
+    BaseModel <|-- SessionInfo
+    class ConnectionManager:::low-complexity
+    ConnectionManager : +complexity: 2
+    ConnectionManager : 🔒__init__(self)
+    ConnectionManager : 🔓disconnect(self, websocket)
+    class PureNormalTrainer:::high-complexity
+    PureNormalTrainer : +complexity: 13
+    PureNormalTrainer : 🔒__init__(self, dataset_file)
+    PureNormalTrainer : 🔓load_dataset(self)
+    PureNormalTrainer : 🔓tokenize_text(self, text)
+    PureNormalTrainer : 🔓text_to_vector(self, text)
+    PureNormalTrainer : 🔓cosine_similarity_custom(self, vec1, vec2)
+    PureNormalTrainer : 🔓build_similarity_model(self)
+    PureNormalTrainer : 🔓try_keyword_matching(self, user_input)
+    PureNormalTrainer : 🔓get_real_time_price(self, coin_name)
+    PureNormalTrainer : 🔓get_coin_information(self, coin_name)
+    PureNormalTrainer : 🔓find_best_response(self, user_input, threshold)
+    PureNormalTrainer : 🔓get_smart_fallback(self, user_input)
+    PureNormalTrainer : 🔓get_response(self, user_input)
+    PureNormalTrainer : 🔓get_training_info(self)
+    class PureNormalTrainer:::high-complexity
+    PureNormalTrainer : +complexity: 13
+    PureNormalTrainer : 🔒__init__(self, dataset_file)
+    PureNormalTrainer : 🔓load_dataset(self)
+    PureNormalTrainer : 🔓tokenize_text(self, text)
+    PureNormalTrainer : 🔓text_to_vector(self, text)
+    PureNormalTrainer : 🔓cosine_similarity_custom(self, vec1, vec2)
+    PureNormalTrainer : 🔓build_similarity_model(self)
+    PureNormalTrainer : 🔓try_keyword_matching(self, user_input)
+    PureNormalTrainer : 🔓get_real_time_price(self, coin_name)
+    PureNormalTrainer : 🔓get_coin_information(self, coin_name)
+    PureNormalTrainer : 🔓find_best_response(self, user_input, threshold)
+    PureNormalTrainer : 🔓get_smart_fallback(self, user_input)
+    PureNormalTrainer : 🔓get_response(self, user_input)
+    PureNormalTrainer : 🔓get_training_info(self)
+    class DOTDiagramGenerator:::medium-complexity
+    DOTDiagramGenerator : +complexity: 7
+    DOTDiagramGenerator : 🔒__init__(self, project_root)
+    DOTDiagramGenerator : 🔓scan_project(self)
+    DOTDiagramGenerator : 🔓generate_class_hierarchy_dot(self)
+    DOTDiagramGenerator : 🔓generate_module_dependency_dot(self)
+    DOTDiagramGenerator : 🔓generate_system_architecture_dot(self)
+    DOTDiagramGenerator : 🔓export_dot_files(self)
+    DOTDiagramGenerator : 🔓generate_conversion_script(self)
+    class DOTVisitor:::low-complexity
+    DOTVisitor : +complexity: 5
+    DOTVisitor : 🔒__init__(self, filename)
+    DOTVisitor : 🔓visit_ClassDef(self, node)
+    DOTVisitor : 🔓visit_FunctionDef(self, node)
+    DOTVisitor : 🔓visit_Import(self, node)
+    DOTVisitor : 🔓visit_ImportFrom(self, node)
+    Unknown <|-- DOTVisitor
+    class ImprovedDualPersonalityChatbot:::medium-complexity
+    ImprovedDualPersonalityChatbot : +complexity: 10
+    ImprovedDualPersonalityChatbot : 🔒__init__(self)
+    ImprovedDualPersonalityChatbot : 🔓initialize_trainers(self)
+    ImprovedDualPersonalityChatbot : 🔓initialize_news_service(self)
+    ImprovedDualPersonalityChatbot : 🔓switch_personality(self, mode)
+    ImprovedDualPersonalityChatbot : 🔓get_crypto_news_context(self, user_input)
+    ImprovedDualPersonalityChatbot : 🔓get_response(self, user_input)
+    ImprovedDualPersonalityChatbot : 🔓get_system_info(self)
+    ImprovedDualPersonalityChatbot : 🔓get_conversation_history(self)
+    ImprovedDualPersonalityChatbot : 🔓clear_history(self)
+    ImprovedDualPersonalityChatbot : 🔓get_learning_statistics(self)
+    class ImprovedDualPersonalityChatbot:::medium-complexity
+    ImprovedDualPersonalityChatbot : +complexity: 10
+    ImprovedDualPersonalityChatbot : 🔒__init__(self)
+    ImprovedDualPersonalityChatbot : 🔓initialize_trainers(self)
+    ImprovedDualPersonalityChatbot : 🔓initialize_news_service(self)
+    ImprovedDualPersonalityChatbot : 🔓switch_personality(self, mode)
+    ImprovedDualPersonalityChatbot : 🔓get_crypto_news_context(self, user_input)
+    ImprovedDualPersonalityChatbot : 🔓get_response(self, user_input)
+    ImprovedDualPersonalityChatbot : 🔓get_system_info(self)
+    ImprovedDualPersonalityChatbot : 🔓get_conversation_history(self)
+    ImprovedDualPersonalityChatbot : 🔓clear_history(self)
+    ImprovedDualPersonalityChatbot : 🔓get_learning_statistics(self)
+    class ChatRequest:::low-complexity
+    ChatRequest : +complexity: 0
+    BaseModel <|-- ChatRequest
+    class ChatResponse:::low-complexity
+    ChatResponse : +complexity: 0
+    BaseModel <|-- ChatResponse
+    class PersonalityRequest:::low-complexity
+    PersonalityRequest : +complexity: 0
+    BaseModel <|-- PersonalityRequest
+    class KoinTossProductionTest:::medium-complexity
+    KoinTossProductionTest : +complexity: 8
+    KoinTossProductionTest : 🔒__init__(self)
+    KoinTossProductionTest : 🔓test_chatbot_core(self)
+    KoinTossProductionTest : 🔓test_autonomous_training(self)
+    KoinTossProductionTest : 🔓test_api_imports(self)
+    KoinTossProductionTest : 🔓test_data_sources(self)
+    KoinTossProductionTest : 🔓test_training_functionality(self)
+    KoinTossProductionTest : 🔓test_file_integrity(self)
+    KoinTossProductionTest : 🔓run_all_tests(self)
+    class PureNormalTrainer:::medium-complexity
+    PureNormalTrainer : +complexity: 7
+    PureNormalTrainer : 🔒__init__(self, dataset_file)
+    PureNormalTrainer : 🔓load_dataset(self)
+    PureNormalTrainer : 🔓load_json_dataset(self)
+    PureNormalTrainer : 🔓load_text_dataset(self)
+    PureNormalTrainer : 🔓build_similarity_model(self)
+    PureNormalTrainer : 🔓find_best_response(self, user_input, threshold)
+    PureNormalTrainer : 🔓get_training_stats(self)
+    class PureSubZeroTrainer:::medium-complexity
+    PureSubZeroTrainer : +complexity: 10
+    PureSubZeroTrainer : 🔒__init__(self, dataset_file)
+    PureSubZeroTrainer : 🔓tokenize_text(self, text)
+    PureSubZeroTrainer : 🔓text_to_vector(self, text)
+    PureSubZeroTrainer : 🔓cosine_similarity_custom(self, vec1, vec2)
+    PureSubZeroTrainer : 🔓load_dataset(self)
+    PureSubZeroTrainer : 🔓build_similarity_model(self)
+    PureSubZeroTrainer : 🔓find_best_response(self, user_input, threshold)
+    PureSubZeroTrainer : 🔓get_subzero_fallback(self, user_input)
+    PureSubZeroTrainer : 🔓get_response(self, user_input)
+    PureSubZeroTrainer : 🔓get_training_info(self)
+    class PureSubZeroTrainer:::low-complexity
+    PureSubZeroTrainer : +complexity: 5
+    PureSubZeroTrainer : 🔒__init__(self, dataset_file)
+    PureSubZeroTrainer : 🔓load_dataset(self)
+    PureSubZeroTrainer : 🔓build_similarity_model(self)
+    PureSubZeroTrainer : 🔓get_response(self, user_input, threshold)
+    PureSubZeroTrainer : 🔓get_training_stats(self)
+    class TrainingAnalytics:::medium-complexity
+    TrainingAnalytics : +complexity: 7
+    TrainingAnalytics : 🔒__init__(self)
+    TrainingAnalytics : 🔓load_training_history(self)
+    TrainingAnalytics : 🔓analyze_training_progress(self)
+    TrainingAnalytics : 🔓analyze_conversation_patterns(self)
+    TrainingAnalytics : 🔓generate_training_report(self)
+    TrainingAnalytics : 🔓save_analytics_report(self, filename)
+    TrainingAnalytics : 🔓visualize_training_progress(self)
+    class SimpleTrainingDemo:::medium-complexity
+    SimpleTrainingDemo : +complexity: 6
+    SimpleTrainingDemo : 🔒__init__(self)
+    SimpleTrainingDemo : 🔓start_training_demo(self, duration_minutes)
+    SimpleTrainingDemo : 🔒_run_training_cycle(self, scenarios)
+    SimpleTrainingDemo : 🔒_estimate_quality(self, question, response...)
+    SimpleTrainingDemo : 🔒_show_current_stats(self, stage)
+    SimpleTrainingDemo : 🔒_show_improvement_summary(self)
+    class TrainingOrchestrator:::high-complexity
+    TrainingOrchestrator : +complexity: 11
+    TrainingOrchestrator : 🔒__init__(self)
+    TrainingOrchestrator : 🔓register_training_system(self, name, system)
+    TrainingOrchestrator : 🔓start_orchestrated_training(self)
+    TrainingOrchestrator : 🔓continuous_analytics(self)
+    TrainingOrchestrator : 🔓collect_performance_data(self)
+    TrainingOrchestrator : 🔓analyze_performance_trends(self)
+    TrainingOrchestrator : 🔓generate_optimization_recommendations(self, trends)
+    TrainingOrchestrator : 🔓display_analytics_insights(self, performance, trends...)
+    TrainingOrchestrator : 🔓apply_auto_optimizations(self, recommendations)
+    TrainingOrchestrator : 🔓generate_comprehensive_report(self)
+    TrainingOrchestrator : 🔓stop_orchestrated_training(self)
+    class UseFlowDiagramGenerator:::medium-complexity
+    UseFlowDiagramGenerator : +complexity: 9
+    UseFlowDiagramGenerator : 🔒__init__(self, project_root)
+    UseFlowDiagramGenerator : 🔓generate_user_journey_mermaid(self)
+    UseFlowDiagramGenerator : 🔓generate_use_case_mermaid(self)
+    UseFlowDiagramGenerator : 🔓generate_conversation_flow_mermaid(self)
+    UseFlowDiagramGenerator : 🔓generate_api_flow_mermaid(self)
+    UseFlowDiagramGenerator : 🔓generate_system_state_mermaid(self)
+    UseFlowDiagramGenerator : 🔓generate_data_flow_mermaid(self)
+    UseFlowDiagramGenerator : 🔓export_use_flow_diagrams(self)
+    UseFlowDiagramGenerator : 🔓generate_use_flow_html(self, diagrams)
+    classDef high-complexity fill:#ff6b6b,stroke:#333,stroke-width:2px
+    classDef medium-complexity fill:#ffd93d,stroke:#333,stroke-width:2px
+    classDef low-complexity fill:#6bcf7f,stroke:#333,stroke-width:2px

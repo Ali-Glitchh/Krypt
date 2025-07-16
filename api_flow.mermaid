@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant Client as Client App
+    participant Gateway as API Gateway
+    participant Auth as Authentication
+    participant Rate as Rate Limiter
+    participant Bot as Chatbot Engine
+    participant Normal as Normal Trainer
+    participant SubZero as SubZero Trainer
+    participant News as News Service
+    participant Market as Market API
+    participant DB as Database
+
+    Note over Client,DB: Chat API Request Flow
+
+    Client->>+Gateway: POST /api/chat
+    Gateway->>+Auth: Validate API Key
+    Auth-->>-Gateway: Token Valid
+    Gateway->>+Rate: Check Rate Limit
+    Rate-->>-Gateway: Request Allowed
+    
+    Gateway->>+Bot: Process Message
+    Bot->>Bot: Analyze Input
+    
+    alt Market Data Needed
+        Bot->>+Market: Get Crypto Data
+        Market-->>-Bot: Market Information
+    end
+    
+    alt News Required
+        Bot->>+News: Get Latest News
+        News-->>-Bot: News Articles
+    end
+    
+    alt Normal Personality
+        Bot->>+Normal: Generate Response
+        Normal-->>-Bot: Professional Response
+    else SubZero Personality
+        Bot->>+SubZero: Generate Response
+        SubZero-->>-Bot: Crypto Native Response
+    end
+    
+    Bot->>+DB: Log Interaction
+    DB-->>-Bot: Logged Successfully
+    
+    Bot-->>-Gateway: Response Generated
+    Gateway-->>-Client: JSON Response
+
+    Note over Client,DB: Background Training Process
+
+    loop Continuous Learning
+        Bot->>+DB: Fetch Recent Interactions
+        DB-->>-Bot: Interaction Data
+        Bot->>+Normal: Update Training
+        Bot->>+SubZero: Update Training
+        Normal-->>-Bot: Training Complete
+        SubZero-->>-Bot: Training Complete
+    end

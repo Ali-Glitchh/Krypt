@@ -1,0 +1,77 @@
+flowchart LR
+    subgraph External[External Data Sources]
+        CG[CoinGecko API]
+        NEWS[News APIs]
+        SOCIAL[Social Media]
+        MARKET[Market Feeds]
+    end
+
+    subgraph Input[Data Input Layer]
+        COLLECTOR[Data Collector]
+        VALIDATOR[Data Validator]
+        NORMALIZER[Data Normalizer]
+    end
+
+    subgraph Processing[Processing Layer]
+        ANALYZER[Sentiment Analyzer]
+        FORMATTER[Response Formatter]
+        ROUTER[Personality Router]
+        CONTEXT[Context Manager]
+    end
+
+    subgraph Storage[Data Storage]
+        CACHE[Response Cache]
+        HISTORY[Conversation History]
+        TRAINING[Training Data]
+        METRICS[Performance Metrics]
+    end
+
+    subgraph Output[Output Layer]
+        RENDERER[Response Renderer]
+        LOGGER[Interaction Logger]
+        MONITOR[Performance Monitor]
+    end
+
+    %% External to Input
+    CG --> COLLECTOR
+    NEWS --> COLLECTOR
+    SOCIAL --> COLLECTOR
+    MARKET --> COLLECTOR
+
+    %% Input Layer Flow
+    COLLECTOR --> VALIDATOR
+    VALIDATOR --> NORMALIZER
+
+    %% Processing Flow
+    NORMALIZER --> ANALYZER
+    ANALYZER --> FORMATTER
+    FORMATTER --> ROUTER
+    ROUTER --> CONTEXT
+
+    %% Storage Interactions
+    CONTEXT <--> CACHE
+    CONTEXT <--> HISTORY
+    ROUTER <--> TRAINING
+    FORMATTER --> METRICS
+
+    %% Output Flow
+    CONTEXT --> RENDERER
+    RENDERER --> LOGGER
+    LOGGER --> MONITOR
+
+    %% Feedback Loop
+    MONITOR -.-> TRAINING
+    METRICS -.-> ROUTER
+
+    %% Styling
+    classDef external fill:#ffebee,stroke:#c62828,stroke-width:2px
+    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef processing fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef storage fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef output fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+
+    class CG,NEWS,SOCIAL,MARKET external
+    class COLLECTOR,VALIDATOR,NORMALIZER input
+    class ANALYZER,FORMATTER,ROUTER,CONTEXT processing
+    class CACHE,HISTORY,TRAINING,METRICS storage
+    class RENDERER,LOGGER,MONITOR output

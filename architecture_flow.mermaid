@@ -1,0 +1,47 @@
+flowchart TD
+    subgraph Frontend[Frontend Layer]
+        autonomous_training_demo[autonomous_training_demo]
+        comprehensive_demo[comprehensive_demo]
+        continuous_training_demo[continuous_training_demo]
+        demo_bot[demo_bot]
+        iframe_app[iframe_app]
+    end
+    subgraph API[API Layer]
+        api_server[api_server]
+        api_utils[api_utils]
+        enhanced_kointoss_api_server[enhanced_kointoss_api_server]
+        kointoss_api_server[kointoss_api_server]
+        test_api_integration[test_api_integration]
+    end
+    subgraph Core[Core Layer]
+        crypto_chatbot[crypto_chatbot]
+        crypto_chatbot_fixed[crypto_chatbot_fixed]
+        crypto_chatbot_fixed_subzero[crypto_chatbot_fixed_subzero]
+        crypto_chatbot_simple[crypto_chatbot_simple]
+        dual_personality_intensive_trainer[dual_personality_intensive_trainer]
+    end
+    subgraph Training[Training Layer]
+        advanced_autonomous_trainer[advanced_autonomous_trainer]
+        advanced_subzero_trainer[advanced_subzero_trainer]
+        advanced_subzero_trainer_fixed[advanced_subzero_trainer_fixed]
+        autonomous_training_demo[autonomous_training_demo]
+        autonomous_training_system[autonomous_training_system]
+    end
+    subgraph Data[Data Layer]
+        crypto_news_insights[crypto_news_insights]
+        generate_subzero_dataset[generate_subzero_dataset]
+        test_article_insights[test_article_insights]
+    end
+    subgraph Utils[Utils Layer]
+        api_utils[api_utils]
+        article_manager[article_manager]
+        compatibility_test[compatibility_test]
+        comprehensive_final_test[comprehensive_final_test]
+        comprehensive_sub_zero_test[comprehensive_sub_zero_test]
+    end
+    Frontend --> API
+    API --> Core
+    Core --> Training
+    Training --> Data
+    Data --> Utils
+    Utils --> Core

@@ -1,0 +1,57 @@
+flowchart TD
+    START([User starts chat]) --> INPUT[User sends message]
+    INPUT --> VALIDATE{Valid input?}
+    VALIDATE -->|No| ERROR[Show error message]
+    ERROR --> INPUT
+    VALIDATE -->|Yes| PREPROCESS[Preprocess message]
+    
+    PREPROCESS --> DETECT{Detect intent}
+    DETECT -->|Greeting| WELCOME[Welcome response]
+    DETECT -->|Market query| MARKET_FLOW[Market data flow]
+    DETECT -->|News request| NEWS_FLOW[News flow]
+    DETECT -->|Personality switch| SWITCH_FLOW[Switch flow]
+    DETECT -->|General chat| PERSONALITY{Current personality?}
+    
+    PERSONALITY -->|Normal| NORMAL[Generate normal response]
+    PERSONALITY -->|SubZero| SUBZERO[Generate SubZero response]
+    
+    MARKET_FLOW --> FETCH_MARKET[Fetch market data]
+    FETCH_MARKET --> FORMAT_MARKET[Format market response]
+    FORMAT_MARKET --> PERSONALITY
+    
+    NEWS_FLOW --> FETCH_NEWS[Fetch crypto news]
+    FETCH_NEWS --> ANALYZE_SENTIMENT[Analyze sentiment]
+    ANALYZE_SENTIMENT --> FORMAT_NEWS[Format news response]
+    FORMAT_NEWS --> PERSONALITY
+    
+    SWITCH_FLOW --> VALIDATE_SWITCH{Valid personality?}
+    VALIDATE_SWITCH -->|Yes| UPDATE_MODE[Update personality mode]
+    VALIDATE_SWITCH -->|No| SWITCH_ERROR[Invalid personality error]
+    UPDATE_MODE --> CONFIRM[Confirm switch]
+    SWITCH_ERROR --> DISPLAY
+    
+    WELCOME --> DISPLAY[Display response]
+    NORMAL --> LOG[Log interaction]
+    SUBZERO --> LOG
+    CONFIRM --> DISPLAY
+    
+    LOG --> TRAIN{Training enabled?}
+    TRAIN -->|Yes| UPDATE_TRAINING[Update training data]
+    TRAIN -->|No| DISPLAY
+    UPDATE_TRAINING --> DISPLAY
+    
+    DISPLAY --> WAIT[Wait for next input]
+    WAIT --> INPUT
+    
+    %% Styling
+    classDef startEnd fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    classDef process fill:#bbdefb,stroke:#1976d2,stroke-width:2px
+    classDef decision fill:#fff3c4,stroke:#f57f17,stroke-width:2px
+    classDef error fill:#ffcdd2,stroke:#c62828,stroke-width:2px
+    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    
+    class START,DISPLAY,WAIT startEnd
+    class INPUT,PREPROCESS,NORMAL,SUBZERO,FETCH_MARKET,FETCH_NEWS process
+    class VALIDATE,DETECT,PERSONALITY,VALIDATE_SWITCH,TRAIN decision
+    class ERROR,SWITCH_ERROR error
+    class LOG,UPDATE_TRAINING,FORMAT_MARKET,FORMAT_NEWS data

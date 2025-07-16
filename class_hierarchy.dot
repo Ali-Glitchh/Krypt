@@ -1,0 +1,138 @@
+digraph ClassHierarchy {
+    rankdir=TB;
+    node [shape=record, style=filled, fillcolor=lightblue];
+    edge [color=darkblue, arrowhead=onormal];
+
+    AdvancedAutonomousTrainer [label="{
+        AdvancedAutonomousTrainer|
+        + __init__()\n+ initialize_dynamic_scenarios()\n+ fetch_real_time_data()\n+ analyze_market_sentiment()\n+ generate_contextual_training_data()
+    }}"];
+    AdvancedTrainingSystem [label="{
+        AdvancedTrainingSystem|
+        + __init__()\n+ start_background_training()\n+ stop_background_training()\n+ _background_training_loop()\n+ record_interaction()
+    }}"];
+    CryptoAPIs [label="{
+        CryptoAPIs|
+        + __init__()\n+ initialize_apis()\n+ get_markets_data()\n+ get_coin_price()
+    }}"];
+    AutonomousTrainingSystem [label="{
+        AutonomousTrainingSystem|
+        + __init__()\n+ generate_training_scenarios()\n+ start_autonomous_training()\n+ stop_autonomous_training()\n+ _training_loop()
+    }}"];
+    CodeAnalyzer [label="{
+        CodeAnalyzer|
+        + __init__()\n+ scan_project()\n+ analyze_file()\n+ analyze_class()\n+ analyze_function()
+    }}"];
+    CryptoNewsInsights [label="{
+        CryptoNewsInsights|
+        + __init__()\n+ get_latest_news()\n+ _fetch_coingecko_news()\n+ _get_mock_news()\n+ analyze_sentiment()
+    }}"];
+    DualPersonalityAdvancedTrainer [label="{
+        DualPersonalityAdvancedTrainer|
+        + __init__()\n+ create_normal_personality_scenarios()\n+ create_subzero_personality_scenarios()\n+ create_shared_scenarios()\n+ fetch_enhanced_market_data()
+    }}"];
+    SessionManager [label="{
+        SessionManager|
+        + __init__()\n+ create_session()\n+ get_session()\n+ update_session()\n+ cleanup_expired_sessions()
+    }}"];
+    RateLimiter [label="{
+        RateLimiter|
+        + __init__()\n+ is_allowed()
+    }}"];
+    ChatRequest [label="{
+        ChatRequest|
+        
+    }}"];
+    BaseModel -> ChatRequest [label="inherits"];
+    ChatResponse [label="{
+        ChatResponse|
+        
+    }}"];
+    BaseModel -> ChatResponse [label="inherits"];
+    PersonalityRequest [label="{
+        PersonalityRequest|
+        
+    }}"];
+    BaseModel -> PersonalityRequest [label="inherits"];
+    SessionInfo [label="{
+        SessionInfo|
+        
+    }}"];
+    BaseModel -> SessionInfo [label="inherits"];
+    ConnectionManager [label="{
+        ConnectionManager|
+        + __init__()\n+ disconnect()
+    }}"];
+    PureNormalTrainer [label="{
+        PureNormalTrainer|
+        + __init__()\n+ load_dataset()\n+ tokenize_text()\n+ text_to_vector()\n+ cosine_similarity_custom()
+    }}"];
+    PureNormalTrainer [label="{
+        PureNormalTrainer|
+        + __init__()\n+ load_dataset()\n+ tokenize_text()\n+ text_to_vector()\n+ cosine_similarity_custom()
+    }}"];
+    DOTDiagramGenerator [label="{
+        DOTDiagramGenerator|
+        + __init__()\n+ scan_project()\n+ generate_class_hierarchy_dot()\n+ generate_module_dependency_dot()\n+ generate_system_architecture_dot()
+    }}"];
+    DOTVisitor [label="{
+        DOTVisitor|
+        + __init__()\n+ visit_ClassDef()\n+ visit_FunctionDef()\n+ visit_Import()\n+ visit_ImportFrom()
+    }}"];
+    Unknown -> DOTVisitor [label="inherits"];
+    ImprovedDualPersonalityChatbot [label="{
+        ImprovedDualPersonalityChatbot|
+        + __init__()\n+ initialize_trainers()\n+ initialize_news_service()\n+ switch_personality()\n+ get_crypto_news_context()
+    }}"];
+    ImprovedDualPersonalityChatbot [label="{
+        ImprovedDualPersonalityChatbot|
+        + __init__()\n+ initialize_trainers()\n+ initialize_news_service()\n+ switch_personality()\n+ get_crypto_news_context()
+    }}"];
+    ChatRequest [label="{
+        ChatRequest|
+        
+    }}"];
+    BaseModel -> ChatRequest [label="inherits"];
+    ChatResponse [label="{
+        ChatResponse|
+        
+    }}"];
+    BaseModel -> ChatResponse [label="inherits"];
+    PersonalityRequest [label="{
+        PersonalityRequest|
+        
+    }}"];
+    BaseModel -> PersonalityRequest [label="inherits"];
+    KoinTossProductionTest [label="{
+        KoinTossProductionTest|
+        + __init__()\n+ test_chatbot_core()\n+ test_autonomous_training()\n+ test_api_imports()\n+ test_data_sources()
+    }}"];
+    PureNormalTrainer [label="{
+        PureNormalTrainer|
+        + __init__()\n+ load_dataset()\n+ load_json_dataset()\n+ load_text_dataset()\n+ build_similarity_model()
+    }}"];
+    PureSubZeroTrainer [label="{
+        PureSubZeroTrainer|
+        + __init__()\n+ tokenize_text()\n+ text_to_vector()\n+ cosine_similarity_custom()\n+ load_dataset()
+    }}"];
+    PureSubZeroTrainer [label="{
+        PureSubZeroTrainer|
+        + __init__()\n+ load_dataset()\n+ build_similarity_model()\n+ get_response()\n+ get_training_stats()
+    }}"];
+    TrainingAnalytics [label="{
+        TrainingAnalytics|
+        + __init__()\n+ load_training_history()\n+ analyze_training_progress()\n+ analyze_conversation_patterns()\n+ generate_training_report()
+    }}"];
+    SimpleTrainingDemo [label="{
+        SimpleTrainingDemo|
+        + __init__()\n+ start_training_demo()\n+ _run_training_cycle()\n+ _estimate_quality()\n+ _show_current_stats()
+    }}"];
+    TrainingOrchestrator [label="{
+        TrainingOrchestrator|
+        + __init__()\n+ register_training_system()\n+ start_orchestrated_training()\n+ continuous_analytics()\n+ collect_performance_data()
+    }}"];
+    UseFlowDiagramGenerator [label="{
+        UseFlowDiagramGenerator|
+        + __init__()\n+ generate_user_journey_mermaid()\n+ generate_use_case_mermaid()\n+ generate_conversation_flow_mermaid()\n+ generate_api_flow_mermaid()
+    }}"];
+}

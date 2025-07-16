@@ -1,0 +1,29 @@
+graph TD
+    A[User Interface] --> B[Application Layer]
+    B --> C[Core AI Engine]
+    C --> D[Data Layer]
+    D --> E[External APIs]
+    
+    subgraph B[Application Layer]
+        B1[Personality Manager]
+        B2[Training Manager]
+        B3[API Manager]
+    end
+    
+    subgraph C[Core AI Engine]
+        C1[NLP Processor]
+        C2[Similarity Engine]
+        C3[Response Generator]
+    end
+    
+    subgraph D[Data Layer]
+        D1[Training Data]
+        D2[Conversation History]
+        D3[User Preferences]
+    end
+    
+    subgraph E[External APIs]
+        E1[CoinGecko API]
+        E2[CryptoCompare API]
+        E3[News Services]
+    end

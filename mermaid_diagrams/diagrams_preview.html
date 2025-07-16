@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KoinToss FYP - Mermaid Diagrams Preview</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .diagram { margin: 30px 0; padding: 20px; border: 1px solid #ddd; }
+        .diagram h3 { color: #333; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>KoinToss FYP - Mermaid Diagrams Preview</h1>
+    <p>This page shows all the Mermaid diagrams from the FYP report.</p>
+
+    <div class="diagram">
+        <h3>Diagram 1: diagram_1_graph.mmd</h3>
+        <div class="mermaid">
+graph TB
+    subgraph "Frontend Layer"
+        UI[Streamlit Web Interface]
+        UX[User Experience Layer]
+    end
+    
+    subgraph "Application Layer"
+        CM[Chatbot Manager]
+        PM[Personality Manager]
+        TM[Training Manager]
+    end
+    
+    subgraph "Core Services"
+        NLP[NLP Engine]
+        ML[Machine Learning]
+        API[API Integration]
+    end
+    
+    subgraph "Data Layer"
+        TD[Training Data]
+        CD[Conversation Data]
+        MD[Market Data]
+    end
+    
+    subgraph "External Services"
+        CG[CoinGecko API]
+        CC[CryptoCompare API]
+        NEWS[News Services]
+    end
+    
+    UI --> CM
+    UX --> PM
+    CM --> NLP
+    PM --> ML
+    TM --> ML
+    NLP --> API
+    ML --> TD
+    API --> CG
+    API --> CC
+    API --> NEWS
+    TD --> CD
+    CD --> MD
+        </div>
+        <h4>Source Code:</h4>
+        <pre>graph TB
+    subgraph "Frontend Layer"
+        UI[Streamlit Web Interface]
+        UX[User Experience Layer]
+    end
+    
+    subgraph "Application Layer"
+        CM[Chatbot Manager]
+        PM[Personality Manager]
+        TM[Training Manager]
+    end
+    
+    subgraph "Core Services"
+        NLP[NLP Engine]
+        ML[Machine Learning]
+        API[API Integration]
+    end
+    
+    subgraph "Data Layer"
+        TD[Training Data]
+        CD[Conversation Data]
+        MD[Market Data]
+    end
+    
+    subgraph "External Services"
+        CG[CoinGecko API]
+        CC[CryptoCompare API]
+        NEWS[News Services]
+    end
+    
+    UI --> CM
+    UX --> PM
+    CM --> NLP
+    PM --> ML
+    TM --> ML
+    NLP --> API
+    ML --> TD
+    API --> CG
+    API --> CC
+    API --> NEWS
+    TD --> CD
+    CD --> MD</pre>
+    </div>
+
+    <div class="diagram">
+        <h3>Diagram 2: diagram_2_graph.mmd</h3>
+        <div class="mermaid">
+graph TD
+    A[User Interface] --> B[Application Layer]
+    B --> C[Core AI Engine]
+    C --> D[Data Layer]
+    D --> E[External APIs]
+    
+    subgraph B[Application Layer]
+        B1[Personality Manager]
+        B2[Training Manager]
+        B3[API Manager]
+    end
+    
+    subgraph C[Core AI Engine]
+        C1[NLP Processor]
+        C2[Similarity Engine]
+        C3[Response Generator]
+    end
+    
+    subgraph D[Data Layer]
+        D1[Training Data]
+        D2[Conversation History]
+        D3[User Preferences]
+    end
+    
+    subgraph E[External APIs]
+        E1[CoinGecko API]
+        E2[CryptoCompare API]
+        E3[News Services]
+    end
+        </div>
+        <h4>Source Code:</h4>
+        <pre>graph TD
+    A[User Interface] --> B[Application Layer]
+    B --> C[Core AI Engine]
+    C --> D[Data Layer]
+    D --> E[External APIs]
+    
+    subgraph B[Application Layer]
+        B1[Personality Manager]
+        B2[Training Manager]
+        B3[API Manager]
+    end
+    
+    subgraph C[Core AI Engine]
+        C1[NLP Processor]
+        C2[Similarity Engine]
+        C3[Response Generator]
+    end
+    
+    subgraph D[Data Layer]
+        D1[Training Data]
+        D2[Conversation History]
+        D3[User Preferences]
+    end
+    
+    subgraph E[External APIs]
+        E1[CoinGecko API]
+        E2[CryptoCompare API]
+        E3[News Services]
+    end</pre>
+    </div>
+
+    <div class="diagram">
+        <h3>Diagram 3: diagram_3_flowchart.mmd</h3>
+        <div class="mermaid">
+flowchart TD
+    Start([User Input]) --> Parse[Parse Input]
+    Parse --> Detect{Personality Switch?}
+    
+    Detect -->|Yes| Switch[Switch Personality]
+    Detect -->|No| Route[Route to Current Personality]
+    
+    Switch --> Route
+    Route --> Normal{Normal Personality?}
+    
+    Normal -->|Yes| NormalTrainer[Enhanced Normal Trainer]
+    Normal -->|No| SubZeroTrainer[Pure SubZero Trainer]
+    
+    NormalTrainer --> Generate[Generate Response]
+    SubZeroTrainer --> Generate
+    
+    Generate --> Record[Record Interaction]
+    Record --> Response([Return Response])
+        </div>
+        <h4>Source Code:</h4>
+        <pre>flowchart TD
+    Start([User Input]) --> Parse[Parse Input]
+    Parse --> Detect{Personality Switch?}
+    
+    Detect -->|Yes| Switch[Switch Personality]
+    Detect -->|No| Route[Route to Current Personality]
+    
+    Switch --> Route
+    Route --> Normal{Normal Personality?}
+    
+    Normal -->|Yes| NormalTrainer[Enhanced Normal Trainer]
+    Normal -->|No| SubZeroTrainer[Pure SubZero Trainer]
+    
+    NormalTrainer --> Generate[Generate Response]
+    SubZeroTrainer --> Generate
+    
+    Generate --> Record[Record Interaction]
+    Record --> Response([Return Response])</pre>
+    </div>
+
+    <script>
+        mermaid.initialize({startOnLoad:true});
+    </script>
+</body>
+</html>

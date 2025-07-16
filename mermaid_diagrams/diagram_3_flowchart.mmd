@@ -1,0 +1,18 @@
+flowchart TD
+    Start([User Input]) --> Parse[Parse Input]
+    Parse --> Detect{Personality Switch?}
+    
+    Detect -->|Yes| Switch[Switch Personality]
+    Detect -->|No| Route[Route to Current Personality]
+    
+    Switch --> Route
+    Route --> Normal{Normal Personality?}
+    
+    Normal -->|Yes| NormalTrainer[Enhanced Normal Trainer]
+    Normal -->|No| SubZeroTrainer[Pure SubZero Trainer]
+    
+    NormalTrainer --> Generate[Generate Response]
+    SubZeroTrainer --> Generate
+    
+    Generate --> Record[Record Interaction]
+    Record --> Response([Return Response])

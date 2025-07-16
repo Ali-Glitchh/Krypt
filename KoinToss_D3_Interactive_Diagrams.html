@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KoinToss Interactive Network Diagrams</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .diagram-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .diagram-panel {
+            flex: 1;
+            min-width: 400px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .network-svg {
+            width: 100%;
+            height: 400px;
+            background: #fafafa;
+        }
+        
+        .node {
+            cursor: pointer;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 2px;
+        }
+        
+        .node-label {
+            font-size: 12px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .controls {
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .control-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .control-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .legend-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 KoinToss Interactive Network Diagrams</h1>
+            <p>Explore the system architecture through interactive visualizations</p>
+        </div>
+        
+        <div class="diagram-container">
+            <!-- Module Dependencies Network -->
+            <div class="diagram-panel">
+                <div class="panel-header">
+                    📦 Module Dependencies Network
+                </div>
+                <svg class="network-svg" id="dependencies-svg"></svg>
+                <div class="controls">
+                    <button class="control-button" onclick="resetDependencies()">Reset View</button>
+                    <button class="control-button" onclick="toggleDependencyLabels()">Toggle Labels</button>
+                    <button class="control-button" onclick="highlightCriticalPath()">Critical Path</button>
+                </div>
+            </div>
+            
+            <!-- Class Hierarchy Network -->
+            <div class="diagram-panel">
+                <div class="panel-header">
+                    🏗️ Class Hierarchy Network
+                </div>
+                <svg class="network-svg" id="classes-svg"></svg>
+                <div class="controls">
+                    <button class="control-button" onclick="resetClasses()">Reset View</button>
+                    <button class="control-button" onclick="expandClassDetails()">Expand Details</button>
+                    <button class="control-button" onclick="filterByComplexity()">Filter Complex</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Flow Network -->
+        <div class="diagram-panel" style="width: 100%; margin-top: 20px;">
+            <div class="panel-header">
+                🔄 System Flow Network
+            </div>
+            <svg class="network-svg" id="flow-svg" style="height: 500px;"></svg>
+            <div class="controls">
+                <button class="control-button" onclick="animateFlow()">Animate Flow</button>
+                <button class="control-button" onclick="highlightUserPath()">User Journey</button>
+                <button class="control-button" onclick="showDataFlow()">Data Flow</button>
+                <button class="control-button" onclick="resetFlow()">Reset</button>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <h3>🎨 Legend</h3>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #ff6b6b;"></span>
+                Core Components
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #4ecdc4;"></span>
+                API Layer
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #45b7d1;"></span>
+                Training System
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #f9ca24;"></span>
+                Data Sources
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #6c5ce7;"></span>
+                Frontend
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #a0a0a0;"></span>
+                Utilities
+            </div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script>
+        // Sample data - in a real implementation, this would be generated from your code analysis
+        const dependencyData = {
+            nodes: [
+                {id: "improved_dual_personality_chatbot", group: "core", size: 20},
+                {id: "enhanced_kointoss_api_server", group: "api", size: 18},
+                {id: "pure_normal_trainer", group: "training", size: 15},
+                {id: "pure_subzero_trainer", group: "training", size: 15},
+                {id: "crypto_news_insights", group: "data", size: 12},
+                {id: "streamlit_app", group: "frontend", size: 10},
+                {id: "autonomous_training_system", group: "training", size: 14},
+                {id: "advanced_autonomous_trainer", group: "training", size: 16},
+                {id: "iframe_app", group: "frontend", size: 8},
+                {id: "api_utils", group: "utils", size: 6}
+            ],
+            links: [
+                {source: "enhanced_kointoss_api_server", target: "improved_dual_personality_chatbot", strength: 3},
+                {source: "improved_dual_personality_chatbot", target: "pure_normal_trainer", strength: 2},
+                {source: "improved_dual_personality_chatbot", target: "pure_subzero_trainer", strength: 2},
+                {source: "improved_dual_personality_chatbot", target: "crypto_news_insights", strength: 2},
+                {source: "streamlit_app", target: "enhanced_kointoss_api_server", strength: 2},
+                {source: "iframe_app", target: "enhanced_kointoss_api_server", strength: 1},
+                {source: "autonomous_training_system", target: "pure_normal_trainer", strength: 2},
+                {source: "autonomous_training_system", target: "pure_subzero_trainer", strength: 2},
+                {source: "advanced_autonomous_trainer", target: "improved_dual_personality_chatbot", strength: 2},
+                {source: "enhanced_kointoss_api_server", target: "api_utils", strength: 1}
+            ]
+        };
+        
+        const classData = {
+            nodes: [
+                {id: "ImprovedDualPersonalityChatbot", group: "core", complexity: 25},
+                {id: "PureNormalTrainer", group: "training", complexity: 18},
+                {id: "PureSubZeroTrainer", group: "training", complexity: 20},
+                {id: "EnhancedKoinTossAPIServer", group: "api", complexity: 22},
+                {id: "CryptoNewsInsights", group: "data", complexity: 15},
+                {id: "AdvancedAutonomousTrainer", group: "training", complexity: 28},
+                {id: "SessionManager", group: "utils", complexity: 12},
+                {id: "TrainingOrchestrator", group: "training", complexity: 16}
+            ],
+            links: [
+                {source: "EnhancedKoinTossAPIServer", target: "ImprovedDualPersonalityChatbot", type: "composition"},
+                {source: "ImprovedDualPersonalityChatbot", target: "PureNormalTrainer", type: "aggregation"},
+                {source: "ImprovedDualPersonalityChatbot", target: "PureSubZeroTrainer", type: "aggregation"},
+                {source: "ImprovedDualPersonalityChatbot", target: "CryptoNewsInsights", type: "dependency"},
+                {source: "AdvancedAutonomousTrainer", target: "ImprovedDualPersonalityChatbot", type: "dependency"},
+                {source: "EnhancedKoinTossAPIServer", target: "SessionManager", type: "composition"}
+            ]
+        };
+        
+        const flowData = {
+            nodes: [
+                {id: "User", group: "external", layer: 0},
+                {id: "Frontend", group: "frontend", layer: 1},
+                {id: "API Gateway", group: "api", layer: 2},
+                {id: "Chatbot Engine", group: "core", layer: 3},
+                {id: "Personality Router", group: "core", layer: 4},
+                {id: "Normal Trainer", group: "training", layer: 5},
+                {id: "SubZero Trainer", group: "training", layer: 5},
+                {id: "News Service", group: "data", layer: 5},
+                {id: "Training System", group: "training", layer: 6},
+                {id: "Response", group: "external", layer: 7}
+            ],
+            links: [
+                {source: "User", target: "Frontend", flow: true},
+                {source: "Frontend", target: "API Gateway", flow: true},
+                {source: "API Gateway", target: "Chatbot Engine", flow: true},
+                {source: "Chatbot Engine", target: "Personality Router", flow: true},
+                {source: "Personality Router", target: "Normal Trainer", flow: true},
+                {source: "Personality Router", target: "SubZero Trainer", flow: true},
+                {source: "Chatbot Engine", target: "News Service", flow: false},
+                {source: "Normal Trainer", target: "Training System", flow: false},
+                {source: "SubZero Trainer", target: "Training System", flow: false},
+                {source: "Personality Router", target: "Response", flow: true},
+                {source: "Response", target: "User", flow: true}
+            ]
+        };
+        
+        // Color schemes
+        const colorSchemes = {
+            core: "#ff6b6b",
+            api: "#4ecdc4", 
+            training: "#45b7d1",
+            data: "#f9ca24",
+            frontend: "#6c5ce7",
+            utils: "#a0a0a0",
+            external: "#2d3436"
+        };
+        
+        // Create networks
+        function createDependencyNetwork() {
+            const svg = d3.select("#dependencies-svg");
+            const width = svg.node().getBoundingClientRect().width;
+            const height = svg.node().getBoundingClientRect().height;
+            
+            svg.selectAll("*").remove();
+            
+            const simulation = d3.forceSimulation(dependencyData.nodes)
+                .force("link", d3.forceLink(dependencyData.links).id(d => d.id).strength(d => d.strength * 0.1))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+            
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(dependencyData.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke-width", d => Math.sqrt(d.strength) * 2);
+            
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(dependencyData.nodes)
+                .enter().append("circle")
+                .attr("class", "node")
+                .attr("r", d => d.size)
+                .style("fill", d => colorSchemes[d.group])
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("mouseover", function(event, d) {
+                    showTooltip(event, d.id + "<br/>Group: " + d.group + "<br/>Size: " + d.size);
+                })
+                .on("mouseout", hideTooltip);
+            
+            const label = svg.append("g")
+                .selectAll("text")
+                .data(dependencyData.nodes)
+                .enter().append("text")
+                .attr("class", "node-label")
+                .text(d => d.id.replace(/_/g, ' ').substring(0, 15))
+                .style("font-size", "10px");
+            
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+                
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+                
+                label
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y + 25);
+            });
+            
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+            
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+            
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }
+        
+        function createClassNetwork() {
+            const svg = d3.select("#classes-svg");
+            const width = svg.node().getBoundingClientRect().width;
+            const height = svg.node().getBoundingClientRect().height;
+            
+            svg.selectAll("*").remove();
+            
+            const simulation = d3.forceSimulation(classData.nodes)
+                .force("link", d3.forceLink(classData.links).id(d => d.id))
+                .force("charge", d3.forceManyBody().strength(-400))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+            
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(classData.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke-dasharray", d => d.type === "dependency" ? "5,5" : "none")
+                .style("stroke-width", d => d.type === "composition" ? 4 : 2);
+            
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(classData.nodes)
+                .enter().append("circle")
+                .attr("class", "node")
+                .attr("r", d => Math.sqrt(d.complexity) * 2)
+                .style("fill", d => colorSchemes[d.group])
+                .on("mouseover", function(event, d) {
+                    showTooltip(event, d.id + "<br/>Complexity: " + d.complexity + "<br/>Group: " + d.group);
+                })
+                .on("mouseout", hideTooltip);
+            
+            const label = svg.append("g")
+                .selectAll("text")
+                .data(classData.nodes)
+                .enter().append("text")
+                .attr("class", "node-label")
+                .text(d => d.id.substring(0, 15))
+                .style("font-size", "9px");
+            
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+                
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+                
+                label
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y + 20);
+            });
+        }
+        
+        function createFlowNetwork() {
+            const svg = d3.select("#flow-svg");
+            const width = svg.node().getBoundingClientRect().width;
+            const height = svg.node().getBoundingClientRect().height;
+            
+            svg.selectAll("*").remove();
+            
+            // Position nodes by layer
+            flowData.nodes.forEach((node, i) => {
+                node.x = (node.layer * width) / 8 + 50;
+                node.y = height / 2 + (Math.random() - 0.5) * 100;
+            });
+            
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(flowData.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke", d => d.flow ? "#667eea" : "#ccc")
+                .style("stroke-width", d => d.flow ? 3 : 1)
+                .attr("marker-end", "url(#arrowhead)");
+            
+            // Add arrow markers
+            svg.append("defs").append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "-0 -5 10 10")
+                .attr("refX", 13)
+                .attr("refY", 0)
+                .attr("orient", "auto")
+                .attr("markerWidth", 13)
+                .attr("markerHeight", 13)
+                .attr("xoverflow", "visible")
+                .append("svg:path")
+                .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+                .attr("fill", "#667eea")
+                .style("stroke", "none");
+            
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(flowData.nodes)
+                .enter().append("circle")
+                .attr("class", "node")
+                .attr("r", 20)
+                .style("fill", d => colorSchemes[d.group])
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+            
+            const label = svg.append("g")
+                .selectAll("text")
+                .data(flowData.nodes)
+                .enter().append("text")
+                .attr("class", "node-label")
+                .text(d => d.id)
+                .attr("x", d => d.x)
+                .attr("y", d => d.y + 30)
+                .style("font-size", "11px");
+            
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+        }
+        
+        // Utility functions
+        function showTooltip(event, content) {
+            const tooltip = d3.select("#tooltip");
+            tooltip.style("opacity", 1)
+                .html(content)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 10) + "px");
+        }
+        
+        function hideTooltip() {
+            d3.select("#tooltip").style("opacity", 0);
+        }
+        
+        // Control functions
+        function resetDependencies() {
+            createDependencyNetwork();
+        }
+        
+        function toggleDependencyLabels() {
+            const labels = d3.select("#dependencies-svg").selectAll(".node-label");
+            labels.style("display", labels.style("display") === "none" ? "block" : "none");
+        }
+        
+        function highlightCriticalPath() {
+            d3.select("#dependencies-svg").selectAll(".node")
+                .style("opacity", d => d.group === "core" ? 1 : 0.3);
+        }
+        
+        function resetClasses() {
+            createClassNetwork();
+        }
+        
+        function expandClassDetails() {
+            d3.select("#classes-svg").selectAll(".node")
+                .transition().duration(500)
+                .attr("r", d => Math.sqrt(d.complexity) * 3);
+        }
+        
+        function filterByComplexity() {
+            d3.select("#classes-svg").selectAll(".node")
+                .style("opacity", d => d.complexity > 20 ? 1 : 0.2);
+        }
+        
+        function animateFlow() {
+            const links = d3.select("#flow-svg").selectAll(".link");
+            links.style("stroke-dasharray", "5,5")
+                .style("stroke-dashoffset", 10)
+                .transition()
+                .duration(2000)
+                .ease(d3.easeLinear)
+                .style("stroke-dashoffset", 0)
+                .on("end", function() {
+                    d3.select(this).style("stroke-dasharray", "none");
+                });
+        }
+        
+        function highlightUserPath() {
+            d3.select("#flow-svg").selectAll(".link")
+                .style("opacity", d => d.flow ? 1 : 0.2);
+        }
+        
+        function showDataFlow() {
+            d3.select("#flow-svg").selectAll(".link")
+                .style("opacity", d => !d.flow ? 1 : 0.2);
+        }
+        
+        function resetFlow() {
+            createFlowNetwork();
+        }
+        
+        // Initialize all networks
+        window.onload = function() {
+            createDependencyNetwork();
+            createClassNetwork();
+            createFlowNetwork();
+        };
+        
+        // Responsive resize
+        window.onresize = function() {
+            setTimeout(() => {
+                createDependencyNetwork();
+                createClassNetwork(); 
+                createFlowNetwork();
+            }, 100);
+        };
+    </script>
+</body>
+</html>

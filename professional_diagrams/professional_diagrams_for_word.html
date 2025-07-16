@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KoinToss FYP - System Diagrams (Ready for Screenshots)</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .diagram-container {
+            background-color: white;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            page-break-after: always;
+        }
+        
+        .diagram-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .diagram-subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        /* Architecture Diagram Styles */
+        .architecture-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+        }
+        
+        .layer {
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .layer h4 {
+            margin: 0 0 15px 0;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        .layer.frontend { background-color: #e8f5e8; border-color: #27ae60; }
+        .layer.application { background-color: #e8f4f8; border-color: #3498db; }
+        .layer.core { background-color: #fef9e7; border-color: #f39c12; }
+        .layer.data { background-color: #f4e8f8; border-color: #9b59b6; }
+        .layer.external { background-color: #f8e8e8; border-color: #e74c3c; }
+        
+        .component {
+            background-color: white;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin: 5px;
+            display: inline-block;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Component Diagram Styles */
+        .component-diagram {
+            padding: 20px;
+        }
+        
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .flow-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .box {
+            border: 2px solid #34495e;
+            border-radius: 6px;
+            padding: 12px 20px;
+            background-color: #ecf0f1;
+            min-width: 200px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .box.group {
+            background-color: #d5dbdb;
+            border-style: dashed;
+            min-width: 300px;
+        }
+        
+        .box h5 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        .sub-component {
+            background-color: white;
+            border: 1px solid #95a5a6;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin: 3px;
+            display: inline-block;
+            font-size: 11px;
+            font-weight: normal;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: #3498db;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        
+        /* Flowchart Diagram Styles */
+        .flowchart-diagram {
+            padding: 20px;
+        }
+        
+        .flowchart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .oval {
+            border: 2px solid #27ae60;
+            border-radius: 50px;
+            padding: 12px 25px;
+            background-color: #e8f5e8;
+            font-weight: bold;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .rectangle {
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            padding: 12px 20px;
+            background-color: #e8f4f8;
+            font-weight: bold;
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .diamond {
+            border: 2px solid #f39c12;
+            background-color: #fef9e7;
+            padding: 15px 20px;
+            font-weight: bold;
+            text-align: center;
+            transform: rotate(45deg);
+            min-width: 120px;
+            position: relative;
+        }
+        
+        .diamond::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            white-space: nowrap;
+        }
+        
+        .branch {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .branch-left, .branch-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .label {
+            font-size: 12px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .arrow-left, .arrow-right, .arrow-down {
+            font-size: 20px;
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .merge-arrow {
+            font-size: 24px;
+            color: #3498db;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .instruction-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        .instruction-box h4 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        @media print {
+            .diagram-container {
+                page-break-after: always;
+                margin: 0;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; padding: 20px;">
+        <h1 style="color: #2c3e50;">KoinToss FYP Report - System Diagrams</h1>
+        <p style="color: #7f8c8d; font-style: italic;">Professional diagrams ready for Word document integration</p>
+    </div>
+    
+    <div class="instruction-box">
+        <h4>📸 How to Use These Diagrams</h4>
+        <p><strong>Method 1 (Recommended):</strong> Take high-quality screenshots of each diagram below</p>
+        <ol>
+            <li>Use Windows Snipping Tool or Snip & Sketch (Windows + Shift + S)</li>
+            <li>Capture each diagram individually with some white space around it</li>
+            <li>Save as PNG format for best quality</li>
+            <li>Insert into your Word document</li>
+        </ol>
+        <p><strong>Method 2:</strong> Print to PDF and extract images</p>
+        <p><strong>Method 3:</strong> Use browser developer tools to save individual diagram elements</p>
+    </div>
+
+    <div class="diagram-container" id="diagram_1">
+        <div class="diagram-title">Figure 1: KoinToss System Architecture</div>
+        <div class="diagram-subtitle">Modular system design with clear separation of concerns</div>
+        
+            <div class="architecture-diagram">
+                <div class="layer frontend">
+                    <h4>Frontend Layer</h4>
+                    <div class="component">Streamlit Web Interface</div>
+                    <div class="component">User Experience Layer</div>
+                </div>
+                
+                <div class="layer application">
+                    <h4>Application Layer</h4>
+                    <div class="component">Chatbot Manager</div>
+                    <div class="component">Personality Manager</div>
+                    <div class="component">Training Manager</div>
+                </div>
+                
+                <div class="layer core">
+                    <h4>Core Services</h4>
+                    <div class="component">NLP Engine</div>
+                    <div class="component">Machine Learning</div>
+                    <div class="component">API Integration</div>
+                </div>
+                
+                <div class="layer data">
+                    <h4>Data Layer</h4>
+                    <div class="component">Training Data</div>
+                    <div class="component">Conversation Data</div>
+                    <div class="component">Market Data</div>
+                </div>
+                
+                <div class="layer external">
+                    <h4>External Services</h4>
+                    <div class="component">CoinGecko API</div>
+                    <div class="component">CryptoCompare API</div>
+                    <div class="component">News Services</div>
+                </div>
+            </div>
+            
+    </div>
+
+    <div class="diagram-container" id="diagram_2">
+        <div class="diagram-title">Figure 2: High-Level System Components</div>
+        <div class="diagram-subtitle">Detailed view of internal component relationships</div>
+        
+            <div class="component-diagram">
+                <div class="flow-container">
+                    <div class="flow-item start">
+                        <div class="box">User Interface</div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-item">
+                        <div class="box group">
+                            <h5>Application Layer</h5>
+                            <div class="sub-component">Personality Manager</div>
+                            <div class="sub-component">Training Manager</div>
+                            <div class="sub-component">API Manager</div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-item">
+                        <div class="box group">
+                            <h5>Core AI Engine</h5>
+                            <div class="sub-component">NLP Processor</div>
+                            <div class="sub-component">Similarity Engine</div>
+                            <div class="sub-component">Response Generator</div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-item">
+                        <div class="box group">
+                            <h5>Data Layer</h5>
+                            <div class="sub-component">Training Data</div>
+                            <div class="sub-component">Conversation History</div>
+                            <div class="sub-component">User Preferences</div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-item end">
+                        <div class="box group">
+                            <h5>External APIs</h5>
+                            <div class="sub-component">CoinGecko API</div>
+                            <div class="sub-component">CryptoCompare API</div>
+                            <div class="sub-component">News Services</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+    </div>
+
+    <div class="diagram-container" id="diagram_3">
+        <div class="diagram-title">Figure 3: Dual Personality Processing Flow</div>
+        <div class="diagram-subtitle">Decision flow for personality-based response generation</div>
+        
+            <div class="flowchart-diagram">
+                <div class="flowchart-container">
+                    <div class="flow-step start">
+                        <div class="oval">User Input</div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="rectangle">Parse Input</div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="diamond">Personality Switch?</div>
+                        <div class="branch">
+                            <div class="branch-left">
+                                <div class="label">Yes</div>
+                                <div class="arrow-left">→</div>
+                                <div class="rectangle">Switch Personality</div>
+                                <div class="arrow-down">↓</div>
+                            </div>
+                            <div class="branch-right">
+                                <div class="label">No</div>
+                                <div class="arrow-down">↓</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="rectangle">Route to Current Personality</div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="diamond">Normal Personality?</div>
+                        <div class="branch">
+                            <div class="branch-left">
+                                <div class="label">Yes</div>
+                                <div class="arrow-left">→</div>
+                                <div class="rectangle">Enhanced Normal Trainer</div>
+                            </div>
+                            <div class="branch-right">
+                                <div class="label">No</div>
+                                <div class="arrow-right">→</div>
+                                <div class="rectangle">Pure SubZero Trainer</div>
+                            </div>
+                        </div>
+                        <div class="merge-arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="rectangle">Generate Response</div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="rectangle">Record Interaction</div>
+                        <div class="arrow">↓</div>
+                    </div>
+                    
+                    <div class="flow-step end">
+                        <div class="oval">Return Response</div>
+                    </div>
+                </div>
+            </div>
+            
+    </div>
+
+    <div style="text-align: center; padding: 30px; color: #7f8c8d;">
+        <p><em>Generated on June 26, 2025 at 12:08 AM</em></p>
+        <p><strong>File:</strong> professional_diagrams_for_word.html</p>
+    </div>
+</body>
+</html>

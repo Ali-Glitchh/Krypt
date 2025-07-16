@@ -1,0 +1,256 @@
+classDiagram
+    class AdvancedAutonomousTrainer {
+        -__init__(self, chatbot)
+        +initialize_dynamic_scenarios(self)
+        +fetch_real_time_data(self)
+        +analyze_market_sentiment(self, market_data)
+        +generate_contextual_training_data(self, real_time_data)
+        +self_evaluate_response(self, question, response)
+        +continuous_learning_cycle(self)
+        +analyze_learning_progress(self)
+        +adapt_training_parameters(self)
+        +start_autonomous_training(self)
+        +stop_autonomous_training(self)
+        +get_training_statistics(self)
+        +export_training_data(self, filename)
+    }
+    class AdvancedTrainingSystem {
+        -__init__(self, chatbot_instance)
+        +start_background_training(self)
+        +stop_background_training(self)
+        -_background_training_loop(self)
+        +record_interaction(self, user_input, bot_response, confidence, response_type, personality, feedback_score)
+        +assess_interaction_quality(self, interaction)
+        +collect_user_feedback(self, interaction_index, satisfaction_rating, specific_feedback)
+        +train_from_interactions(self)
+        +save_training_session(self, training_data)
+        +optimize_trainer_parameters(self)
+        +get_success_rate(self)
+        +get_training_statistics(self)
+        +manual_training_cycle(self)
+    }
+    class CryptoAPIs {
+        -__init__(self)
+        +initialize_apis(self)
+        +get_markets_data(self)
+        +get_coin_price(self, coin_id)
+    }
+    class AutonomousTrainingSystem {
+        -__init__(self, chatbot)
+        +generate_training_scenarios(self)
+        +start_autonomous_training(self)
+        +stop_autonomous_training(self)
+        -_training_loop(self)
+        -_run_training_session(self)
+        -_evaluate_response_quality(self, question, response, expected_quality)
+        -_attempt_improvement(self, question, response, personality, expected_quality)
+        -_generate_question_variations(self, question)
+        -_measure_accuracy(self)
+        -_save_training_progress(self)
+        +get_training_status(self)
+        +get_improvement_recommendations(self)
+        +record_interaction(self, user_input, bot_response, confidence, response_type, personality)
+        +get_training_statistics(self)
+        +get_recent_activities(self)
+        +run_single_training_iteration(self)
+    }
+    class CodeAnalyzer {
+        -__init__(self, project_root)
+        +scan_project(self)
+        +analyze_file(self, file_path)
+        +analyze_class(self, node)
+        +analyze_function(self, node)
+        +analyze_import(self, node)
+        +generate_class_diagram_mermaid(self)
+        +generate_dependency_graph_mermaid(self)
+        +generate_file_structure_mermaid(self)
+        +generate_call_flow_diagram(self, entry_point)
+        +export_analysis_report(self, output_file)
+    }
+    class CryptoNewsInsights {
+        -__init__(self)
+        +get_latest_news(self, topic, limit)
+        -_fetch_coingecko_news(self, topic, limit)
+        -_get_mock_news(self, topic, limit)
+        +analyze_sentiment(self, text)
+        +get_market_insights(self, personality)
+        -_generate_enhanced_normal_insights(self, articles, strong_bull, mod_bull, weak_bull, strong_bear, mod_bear, weak_bear, neutral, tech_factors, fund_factors)
+        -_generate_enhanced_subzero_insights(self, articles, strong_bull, mod_bull, weak_bull, strong_bear, mod_bear, weak_bear, neutral, tech_factors, fund_factors)
+        +get_specific_coin_news(self, coin, personality)
+    }
+    class DualPersonalityAdvancedTrainer {
+        -__init__(self, chatbot)
+        +create_normal_personality_scenarios(self)
+        +create_subzero_personality_scenarios(self)
+        +create_shared_scenarios(self)
+        +fetch_enhanced_market_data(self)
+        +analyze_market_conditions(self, market_data)
+        +generate_personality_specific_training(self, personality, market_data)
+        +evaluate_personality_response(self, question, response, expected_personality)
+        +cross_personality_training_cycle(self)
+        +intensive_dual_training_cycle(self)
+        +calculate_learning_velocities(self)
+        +report_training_progress(self, cycle_count)
+        +start_intensive_training(self)
+        +stop_training(self)
+        +get_comprehensive_stats(self)
+        +export_dual_training_data(self, filename)
+    }
+    class SessionManager {
+        -__init__(self)
+        +create_session(self, session_id)
+        +get_session(self, session_id)
+        +update_session(self, session_id, data)
+        +cleanup_expired_sessions(self)
+    }
+    class RateLimiter {
+        -__init__(self)
+        +is_allowed(self, client_id)
+    }
+    class ChatRequest {
+    }
+    BaseModel <|-- ChatRequest
+    class ChatResponse {
+    }
+    BaseModel <|-- ChatResponse
+    class PersonalityRequest {
+    }
+    BaseModel <|-- PersonalityRequest
+    class SessionInfo {
+    }
+    BaseModel <|-- SessionInfo
+    class ConnectionManager {
+        -__init__(self)
+        +disconnect(self, websocket)
+    }
+    class PureNormalTrainer {
+        -__init__(self, dataset_file)
+        +load_dataset(self)
+        +tokenize_text(self, text)
+        +text_to_vector(self, text)
+        +cosine_similarity_custom(self, vec1, vec2)
+        +build_similarity_model(self)
+        +try_keyword_matching(self, user_input)
+        +get_real_time_price(self, coin_name)
+        +get_coin_information(self, coin_name)
+        +find_best_response(self, user_input, threshold)
+        +get_smart_fallback(self, user_input)
+        +get_response(self, user_input)
+        +get_training_info(self)
+    }
+    class PureNormalTrainer {
+        -__init__(self, dataset_file)
+        +load_dataset(self)
+        +tokenize_text(self, text)
+        +text_to_vector(self, text)
+        +cosine_similarity_custom(self, vec1, vec2)
+        +build_similarity_model(self)
+        +try_keyword_matching(self, user_input)
+        +get_real_time_price(self, coin_name)
+        +get_coin_information(self, coin_name)
+        +find_best_response(self, user_input, threshold)
+        +get_smart_fallback(self, user_input)
+        +get_response(self, user_input)
+        +get_training_info(self)
+    }
+    class ImprovedDualPersonalityChatbot {
+        -__init__(self)
+        +initialize_trainers(self)
+        +initialize_news_service(self)
+        +switch_personality(self, mode)
+        +get_crypto_news_context(self, user_input)
+        +get_response(self, user_input)
+        +get_system_info(self)
+        +get_conversation_history(self)
+        +clear_history(self)
+        +get_learning_statistics(self)
+    }
+    class ImprovedDualPersonalityChatbot {
+        -__init__(self)
+        +initialize_trainers(self)
+        +initialize_news_service(self)
+        +switch_personality(self, mode)
+        +get_crypto_news_context(self, user_input)
+        +get_response(self, user_input)
+        +get_system_info(self)
+        +get_conversation_history(self)
+        +clear_history(self)
+        +get_learning_statistics(self)
+    }
+    class ChatRequest {
+    }
+    BaseModel <|-- ChatRequest
+    class ChatResponse {
+    }
+    BaseModel <|-- ChatResponse
+    class PersonalityRequest {
+    }
+    BaseModel <|-- PersonalityRequest
+    class KoinTossProductionTest {
+        -__init__(self)
+        +test_chatbot_core(self)
+        +test_autonomous_training(self)
+        +test_api_imports(self)
+        +test_data_sources(self)
+        +test_training_functionality(self)
+        +test_file_integrity(self)
+        +run_all_tests(self)
+    }
+    class PureNormalTrainer {
+        -__init__(self, dataset_file)
+        +load_dataset(self)
+        +load_json_dataset(self)
+        +load_text_dataset(self)
+        +build_similarity_model(self)
+        +find_best_response(self, user_input, threshold)
+        +get_training_stats(self)
+    }
+    class PureSubZeroTrainer {
+        -__init__(self, dataset_file)
+        +tokenize_text(self, text)
+        +text_to_vector(self, text)
+        +cosine_similarity_custom(self, vec1, vec2)
+        +load_dataset(self)
+        +build_similarity_model(self)
+        +find_best_response(self, user_input, threshold)
+        +get_subzero_fallback(self, user_input)
+        +get_response(self, user_input)
+        +get_training_info(self)
+    }
+    class PureSubZeroTrainer {
+        -__init__(self, dataset_file)
+        +load_dataset(self)
+        +build_similarity_model(self)
+        +get_response(self, user_input, threshold)
+        +get_training_stats(self)
+    }
+    class TrainingAnalytics {
+        -__init__(self)
+        +load_training_history(self)
+        +analyze_training_progress(self)
+        +analyze_conversation_patterns(self)
+        +generate_training_report(self)
+        +save_analytics_report(self, filename)
+        +visualize_training_progress(self)
+    }
+    class SimpleTrainingDemo {
+        -__init__(self)
+        +start_training_demo(self, duration_minutes)
+        -_run_training_cycle(self, scenarios)
+        -_estimate_quality(self, question, response, category)
+        -_show_current_stats(self, stage)
+        -_show_improvement_summary(self)
+    }
+    class TrainingOrchestrator {
+        -__init__(self)
+        +register_training_system(self, name, system)
+        +start_orchestrated_training(self)
+        +continuous_analytics(self)
+        +collect_performance_data(self)
+        +analyze_performance_trends(self)
+        +generate_optimization_recommendations(self, trends)
+        +display_analytics_insights(self, performance, trends, recommendations)
+        +apply_auto_optimizations(self, recommendations)
+        +generate_comprehensive_report(self)
+        +stop_orchestrated_training(self)
+    }

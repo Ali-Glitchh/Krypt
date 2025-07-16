@@ -1,0 +1,70 @@
+graph TB
+    subgraph Users[Actors]
+        GU[General User]
+        CE[Crypto Enthusiast]
+        DEV[Developer]
+        ADMIN[System Admin]
+    end
+
+    subgraph Core[Core Use Cases]
+        CHAT[Chat with Bot]
+        SWITCH[Switch Personalities]
+        MARKET[Get Market Data]
+        NEWS[Receive News]
+        LEARN[Learn About Crypto]
+    end
+
+    subgraph Advanced[Advanced Use Cases]
+        EMBED[Embed Widget]
+        API[API Integration]
+        TRAIN[Continuous Training]
+        ANALYTICS[View Analytics]
+        CONFIG[System Configuration]
+    end
+
+    subgraph System[System Use Cases]
+        MONITOR[Performance Monitoring]
+        DEPLOY[Deployment Management]
+        BACKUP[Data Backup]
+        SECURITY[Security Management]
+    end
+
+    %% User connections
+    GU --> CHAT
+    GU --> LEARN
+    GU --> NEWS
+    
+    CE --> CHAT
+    CE --> SWITCH
+    CE --> MARKET
+    CE --> NEWS
+    
+    DEV --> EMBED
+    DEV --> API
+    DEV --> ANALYTICS
+    
+    ADMIN --> TRAIN
+    ADMIN --> CONFIG
+    ADMIN --> MONITOR
+    ADMIN --> DEPLOY
+    ADMIN --> BACKUP
+    ADMIN --> SECURITY
+
+    %% Use case relationships
+    CHAT -.-> SWITCH
+    CHAT -.-> MARKET
+    CHAT -.-> NEWS
+    MARKET -.-> NEWS
+    EMBED -.-> API
+    ANALYTICS -.-> MONITOR
+
+    %% Styling
+    classDef userClass fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef coreClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef advancedClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef systemClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+
+    class GU,CE,DEV,ADMIN userClass
+    class CHAT,SWITCH,MARKET,NEWS,LEARN coreClass
+    class EMBED,API,TRAIN,ANALYTICS,CONFIG advancedClass
+    class MONITOR,DEPLOY,BACKUP,SECURITY systemClass
