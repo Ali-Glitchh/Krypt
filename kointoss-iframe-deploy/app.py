@@ -24,6 +24,13 @@ st.set_page_config(
     }
 )
 
+# Add iframe-specific meta tags and headers
+st.markdown("""
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-Frame-Options" content="ALLOWALL">
+<meta http-equiv="Content-Security-Policy" content="frame-ancestors *;">
+""", unsafe_allow_html=True)
+
 # Custom CSS for iframe optimization
 st.markdown("""
 <style>
