@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KoinToss iframe Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .iframe-container {
+                height: 500px;
+            }
+            
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🪙 KoinToss AI Assistant iframe Test</h1>
+            <p>Testing iframe embedding for mobile and web applications</p>
+        </div>
+        
+        <div class="iframe-container">
+            <!-- REPLACE THIS URL WITH YOUR STREAMLIT CLOUD URL -->
+            <iframe 
+                src="https://your-username-kointoss-iframe-app-xyz.streamlit.app"
+                title="KoinToss AI Assistant"
+                allow="fullscreen"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms">
+            </iframe>
+        </div>
+        
+        <div class="instructions">
+            <h3>📝 How to Use This Test</h3>
+            <ol>
+                <li>Deploy your app to Streamlit Cloud</li>
+                <li>Replace the iframe src URL above with your app URL</li>
+                <li>Open this HTML file in any browser to test iframe embedding</li>
+                <li>Test on mobile devices for responsive design</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔗 iframe Code for Your Apps</h3>
+            <p><strong>Basic HTML:</strong></p>
+            <div class="code">
+&lt;iframe 
+    src="YOUR_STREAMLIT_URL" 
+    width="100%" 
+    height="600px"
+    frameborder="0"&gt;
+&lt;/iframe&gt;
+            </div>
+            
+            <p><strong>React Component:</strong></p>
+            <div class="code">
+const KoinTossWidget = () =&gt; (
+  &lt;iframe 
+    src="YOUR_STREAMLIT_URL"
+    style={{width: '100%', height: '600px', border: 'none'}}
+  /&gt;
+);
+            </div>
+            
+            <p><strong>React Native:</strong></p>
+            <div class="code">
+import { WebView } from 'react-native-webview';
+
+&lt;WebView 
+  source={{ uri: 'YOUR_STREAMLIT_URL' }}
+  style={{ flex: 1 }}
+/&gt;
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>✅ Features Testing Checklist</h3>
+            <ul>
+                <li>☐ AI chatbot responds correctly</li>
+                <li>☐ Personality switching works</li>
+                <li>☐ Mobile responsive design</li>
+                <li>☐ No Streamlit branding visible</li>
+                <li>☐ Fast loading performance</li>
+                <li>☐ Cross-origin embedding works</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
