@@ -11,7 +11,7 @@ import random
 import re
 from typing import Dict, Optional, List
 from enhanced_normal_trainer import PureNormalTrainer
-from pure_subzero_trainer import PureSubZeroTrainer
+from enhanced_subzero_trainer import EnhancedSubZeroTrainer as PureSubZeroTrainer
 from crypto_news_insights import CryptoNewsInsights
 from datetime import datetime
 
