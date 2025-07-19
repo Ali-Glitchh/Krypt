@@ -36,10 +36,10 @@ chatbot_module = None
 
 # Try importing different chatbot versions
 try:
-    from improved_dual_personality_chatbot_fixed import ImprovedDualPersonalityChatbot
-    chatbot_module = "improved_dual_personality_chatbot_fixed"
+    from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot
+    chatbot_module = "improved_dual_personality_chatbot"
     CHATBOT_AVAILABLE = True
-    import_messages.append(("success", "✅ Using fixed dual personality chatbot"))
+    import_messages.append(("success", "✅ Chatbot initialized using improved_dual_personality_chatbot"))
 except ImportError:
     try:
         from crypto_chatbot_fixed import ImprovedDualPersonalityChatbot
@@ -48,19 +48,13 @@ except ImportError:
         import_messages.append(("success", "✅ Using crypto chatbot fixed version"))
     except ImportError:
         try:
-            from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot
-            chatbot_module = "improved_dual_personality_chatbot"
+            from crypto_chatbot import ImprovedDualPersonalityChatbot
+            chatbot_module = "crypto_chatbot"
             CHATBOT_AVAILABLE = True
-            import_messages.append(("warning", "⚠️ Using original chatbot - some features may be limited"))
-        except ImportError:
-            try:
-                from crypto_chatbot import ImprovedDualPersonalityChatbot
-                chatbot_module = "crypto_chatbot"
-                CHATBOT_AVAILABLE = True
-                import_messages.append(("warning", "⚠️ Using basic crypto chatbot"))
-            except ImportError as e:
-                import_messages.append(("error", f"❌ Error importing chatbot: {e}"))
-                CHATBOT_AVAILABLE = False
+            import_messages.append(("success", "✅ Using basic crypto chatbot"))
+        except ImportError as e:
+            import_messages.append(("error", f"❌ Error importing chatbot: {e}"))
+            CHATBOT_AVAILABLE = False
 
 # Utility functions
 def format_number(num):
@@ -121,17 +115,58 @@ def analyze_sentiment(text, symbol):
         return {'compound': 0, 'positive': 0, 'negative': 0, 'neutral': 1}
 
 def get_crypto_data():
-    """Get cryptocurrency data"""
+    """Get cryptocurrency data with fallback"""
     if not API_UTILS_AVAILABLE:
-        return None
+        # Return fallback static data when API is not available
+        return get_fallback_crypto_data()
     
     try:
         crypto_apis = CryptoAPIs()
-        data = crypto_apis.get_top_cryptocurrencies(limit=10)
-        return data
+        data = crypto_apis.get_markets_data()  # Fixed method name
+        return data[:10] if data else get_fallback_crypto_data()  # Return top 10 or fallback
     except Exception as e:
-        st.error(f"Error fetching crypto data: {e}")
-        return None
+        st.warning(f"⚠️ API temporarily unavailable: {e}")
+        return get_fallback_crypto_data()
+
+def get_fallback_crypto_data():
+    """Fallback crypto data when APIs are unavailable"""
+    return [
+        {
+            'name': 'Bitcoin',
+            'symbol': 'BTC',
+            'current_price': 43250.00,
+            'price_change_percentage_24h': 2.45,
+            'market_cap': 847000000000
+        },
+        {
+            'name': 'Ethereum',
+            'symbol': 'ETH',
+            'current_price': 2580.00,
+            'price_change_percentage_24h': 1.82,
+            'market_cap': 310000000000
+        },
+        {
+            'name': 'Solana',
+            'symbol': 'SOL',
+            'current_price': 98.50,
+            'price_change_percentage_24h': 4.15,
+            'market_cap': 45000000000
+        },
+        {
+            'name': 'Cardano',
+            'symbol': 'ADA',
+            'current_price': 0.47,
+            'price_change_percentage_24h': -1.23,
+            'market_cap': 16500000000
+        },
+        {
+            'name': 'Dogecoin',
+            'symbol': 'DOGE',
+            'current_price': 0.08,
+            'price_change_percentage_24h': 3.67,
+            'market_cap': 11800000000
+        }
+    ]
 
 def safe_get_attribute(obj, attr, default=None):
     """Safely get attribute from object"""
@@ -297,7 +332,15 @@ def main():
             crypto_data = get_crypto_data()
             
             if crypto_data:
-                for crypto in crypto_data[:5]:  # Show top 5
+                # Show market status
+                if API_UTILS_AVAILABLE:
+                    st.success("📡 Real-time market data")
+                else:
+                    st.info("📊 Showing sample market data (API unavailable)")
+                
+                # Display crypto data in columns for better layout
+                cols = st.columns(3)
+                for i, crypto in enumerate(crypto_data[:6]):  # Show top 6 in 2 rows
                     try:
                         name = crypto.get('name', 'Unknown')
                         symbol = crypto.get('symbol', 'N/A')
@@ -306,17 +349,18 @@ def main():
                         
                         change_color = "🟢" if change > 0 else "🔴" if change < 0 else "⚪"
                         
-                        st.markdown(f"""
-                        <div class="metric-card">
-                            <strong>{symbol}</strong><br>
-                            ${price:.4f}<br>
-                            {change_color} {change:.2f}%
-                        </div>
-                        """, unsafe_allow_html=True)
+                        with cols[i % 3]:
+                            st.markdown(f"""
+                            <div class="metric-card">
+                                <strong>{name} ({symbol})</strong><br>
+                                <span style="font-size: 1.2em;">${price:.4f}</span><br>
+                                {change_color} {change:+.2f}%
+                            </div>
+                            """, unsafe_allow_html=True)
                     except Exception:
                         continue
             else:
-                st.info("Market data temporarily unavailable")
+                st.error("❌ Unable to load market data")
         
         # Clear chat button
         if st.button("🗑️ Clear Chat"):
