@@ -183,6 +183,16 @@ class ImprovedDualPersonalityChatbot:
                 "type": "personality_switch"
             }
         
+        # Check for project-specific questions first
+        project_response = self.get_project_info(user_input)
+        if project_response:
+            return project_response
+        
+        # Check for enhanced crypto knowledge
+        crypto_response = self.get_enhanced_crypto_knowledge(user_input)
+        if crypto_response:
+            return crypto_response
+        
         # Initialize response variables
         response_message = ""
         response_type = "unknown"
@@ -277,6 +287,87 @@ class ImprovedDualPersonalityChatbot:
             "type": response_type,
             "confidence": confidence
         }
+    
+    def get_project_info(self, user_input: str) -> Optional[Dict]:
+        """Handle questions about the KoinToss project specifically"""
+        user_lower = user_input.lower()
+        
+        # KoinToss project questions
+        kointoss_keywords = ['kointoss', 'koin toss', 'coin toss', 'this project', 'your project', 'about you']
+        if any(keyword in user_lower for keyword in kointoss_keywords):
+            if self.personality_mode == "subzero":
+                return {
+                    "message": "🧊 KOINTOSS IS THE ULTIMATE CRYPTO WEAPON! A dual-personality AI assistant forged in the ice of digital warfare! I am your WARRIOR mode - providing COLD, calculated market insights and aggressive trading wisdom! The educational mode teaches, but I DOMINATE! Together we conquer the crypto realm with UNSTOPPABLE POWER! This project combines advanced AI, real-time market data, and pure DETERMINATION! ❄️⚔️💎",
+                    "personality": self.personality_mode,
+                    "type": "project_info",
+                    "confidence": 0.95
+                }
+            else:
+                return {
+                    "message": "KoinToss is an advanced AI-powered cryptocurrency assistant designed to help users navigate the complex world of digital assets. Our unique dual-personality system offers two distinct modes: 🎓 Educational Mode (that's me!) provides friendly, informative guidance perfect for learning, and ⚔️ Warrior Mode offers bold, aggressive market insights. The project integrates real-time market data, sentiment analysis, and continuous learning capabilities to deliver comprehensive crypto assistance. Whether you're a beginner or experienced trader, KoinToss adapts to your needs!",
+                    "personality": self.personality_mode,
+                    "type": "project_info",
+                    "confidence": 0.95
+                }
+        
+        return None
+
+    def get_enhanced_crypto_knowledge(self, user_input: str) -> Optional[Dict]:
+        """Provide enhanced crypto knowledge responses"""
+        user_lower = user_input.lower()
+        
+        # Bitcoin questions
+        if any(word in user_lower for word in ['bitcoin', 'btc']):
+            if self.personality_mode == "subzero":
+                return {
+                    "message": "🧊 BITCOIN - THE APEX PREDATOR OF CRYPTO! Created by the legendary Satoshi Nakamoto in 2009, this digital beast commands RESPECT! 💎 21 million coins maximum - SCARCITY breeds POWER! No banks, no government control - PURE DECENTRALIZATION! When institutions tremble, you know it's UNSTOPPABLE! Bitcoin doesn't ask permission - it TAKES what it deserves! The blockchain fortress is UNBREAKABLE! This is the KING of all cryptocurrencies! ❄️⚔️👑",
+                    "personality": self.personality_mode,
+                    "type": "crypto_info",
+                    "confidence": 0.9
+                }
+            else:
+                return {
+                    "message": "Bitcoin (BTC) is the world's first and most well-known cryptocurrency, created in 2009 by the pseudonymous Satoshi Nakamoto. Often called 'digital gold,' Bitcoin features: 📊 Limited supply of 21 million coins, 🔒 Decentralized network with no central authority, 💫 Peer-to-peer transactions without banks, 🛡️ Secured by blockchain technology and mining. Bitcoin's value comes from its scarcity, utility as a store of value, and growing institutional adoption. It's the foundation of the entire cryptocurrency ecosystem!",
+                    "personality": self.personality_mode,
+                    "type": "crypto_info",
+                    "confidence": 0.9
+                }
+        
+        # Ethereum questions
+        if any(word in user_lower for word in ['ethereum', 'eth']):
+            if self.personality_mode == "subzero":
+                return {
+                    "message": "🧊 ETHEREUM - THE PROGRAMMABLE ICE FORTRESS! Created by the brilliant Vitalik Buterin in 2015, this platform is BUILT FOR WAR! 💪 Smart contracts = UNSTOPPABLE automation! DeFi kingdoms run on Ethereum's FROZEN rails! After 'The Merge' upgrade, ETH became a STAKING POWERHOUSE! 🔥 Supply burns while stakers earn - DEFLATIONARY DOMINANCE! This is where innovation meets PURE POWER! ❄️⚔️🚀",
+                    "personality": self.personality_mode,
+                    "type": "crypto_info",
+                    "confidence": 0.9
+                }
+            else:
+                return {
+                    "message": "Ethereum (ETH) is a decentralized blockchain platform that enables smart contracts and decentralized applications (DApps). Created by Vitalik Buterin in 2015, Ethereum features: 🔧 Smart contracts (self-executing contracts), 🏗️ Platform for thousands of DApps, 💰 Native currency (Ether/ETH), ⚡ Proof-of-Stake consensus (after The Merge), 🔥 Deflationary tokenomics through EIP-1559. Ethereum is often called the 'world computer' and hosts the majority of DeFi protocols, NFTs, and Web3 applications!",
+                    "personality": self.personality_mode,
+                    "type": "crypto_info",
+                    "confidence": 0.9
+                }
+        
+        # General crypto questions
+        if any(word in user_lower for word in ['crypto', 'cryptocurrency', 'what is crypto']):
+            if self.personality_mode == "subzero":
+                return {
+                    "message": "🧊 CRYPTOCURRENCY IS DIGITAL WARFARE! Decentralized money that CRUSHES traditional banking! Built on unbreakable blockchain technology, crypto offers TOTAL FREEDOM from government control! 💀 No central authority can stop the crypto revolution! Bitcoin leads the charge, Ethereum powers innovation, and thousands of altcoins follow! This is the future of money - COLD, CALCULATED, and UNSTOPPABLE! Join the revolution or get left in the ice! ❄️⚔️💎",
+                    "personality": self.personality_mode,
+                    "type": "crypto_info",
+                    "confidence": 0.9
+                }
+            else:
+                return {
+                    "message": "Cryptocurrency is digital money secured by cryptography and operating on decentralized networks, typically using blockchain technology. Key features include: 🔐 Cryptographic security (nearly impossible to counterfeit), 🌐 Decentralization (no central authority), 📊 Transparency (public transaction ledgers), 🚀 Global accessibility (24/7 trading), 💸 Peer-to-peer transactions. Since Bitcoin's creation in 2009, thousands of cryptocurrencies have emerged, each serving different purposes from payments to smart contracts to digital collectibles!",
+                    "personality": self.personality_mode,
+                    "type": "crypto_info",
+                    "confidence": 0.9
+                }
+        
+        return None
     
     def get_system_info(self) -> Dict:
         """Get system information"""

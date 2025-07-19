@@ -321,6 +321,45 @@ def main():
                 st.write("**📊 Learning Progress**")
                 st.info("Advanced learning features available in enhanced version")
             
+            # Add Market Overview to sidebar
+            st.header("💰 Market Overview")
+            
+            # Get crypto data for sidebar
+            with st.spinner("Loading..."):
+                crypto_data = get_crypto_data()
+                
+                if crypto_data:
+                    # Show status in sidebar
+                    if API_UTILS_AVAILABLE:
+                        st.success("📡 Real-time market data")
+                    else:
+                        st.info("📊 Sample data")
+                    
+                    # Display top 5 cryptos in sidebar format
+                    for crypto in crypto_data[:5]:
+                        try:
+                            name = crypto.get('name', 'Unknown')
+                            symbol = crypto.get('symbol', 'N/A')
+                            price = crypto.get('current_price', 0)
+                            change = crypto.get('price_change_percentage_24h', 0)
+                            
+                            # Format price based on value
+                            if price >= 1:
+                                price_str = f"${price:,.2f}"
+                            else:
+                                price_str = f"${price:.6f}"
+                            
+                            # Create metric display
+                            st.metric(
+                                label=f"{symbol}",
+                                value=price_str,
+                                delta=f"{change:+.2f}%"
+                            )
+                        except Exception:
+                            continue
+                else:
+                    st.warning("Market data unavailable")
+            
         else:
             st.error("🤖 AI Assistant: Offline")
             st.write("Please check chatbot configuration")
@@ -391,9 +430,29 @@ def main():
                     try:
                         response = safe_call_method(st.session_state.chatbot, 'get_response', prompt)
                         if response:
-                            st.markdown(response)
-                            # Add response to chat history
-                            st.session_state.messages.append({"role": "assistant", "content": response})
+                            # Handle different response formats
+                            if isinstance(response, dict):
+                                # Extract message from dict response
+                                message = response.get('message', str(response))
+                                personality = response.get('personality', 'unknown')
+                                
+                                # Add personality indicator
+                                if personality == 'subzero':
+                                    personality_icon = "⚔️ Warrior"
+                                elif personality == 'normal':
+                                    personality_icon = "🎓 Educational"
+                                else:
+                                    personality_icon = "🤖 AI"
+                                
+                                # Display the clean message with personality indicator
+                                st.markdown(f"**{personality_icon}:** {message}")
+                                # Add clean response to chat history
+                                st.session_state.messages.append({"role": "assistant", "content": f"**{personality_icon}:** {message}"})
+                            else:
+                                # Handle string responses
+                                clean_response = str(response)
+                                st.markdown(clean_response)
+                                st.session_state.messages.append({"role": "assistant", "content": clean_response})
                         else:
                             error_msg = "⚠️ I'm having trouble generating a response. Please try again or rephrase your question."
                             st.markdown(error_msg)
