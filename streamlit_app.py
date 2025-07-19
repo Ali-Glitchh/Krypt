@@ -1,4 +1,13 @@
 import streamlit as st
+
+# Set page config FIRST - must be the very first Streamlit command
+st.set_page_config(
+    page_title="KoinToss - AI Crypto Assistant",
+    page_icon="🪙",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import pandas as pd
 import requests
@@ -9,12 +18,15 @@ import re
 import os
 import json
 
+# Store import status messages for later display
+import_messages = []
+
 # Import API utilities with error handling
 try:
     from api_utils import CryptoAPIs, RATE_LIMIT_DELAY
     API_UTILS_AVAILABLE = True
 except ImportError as e:
-    st.warning(f"⚠️ API utilities not available: {e}")
+    import_messages.append(("warning", f"⚠️ API utilities not available: {e}"))
     API_UTILS_AVAILABLE = False
     RATE_LIMIT_DELAY = 1.5  # fallback value
 
@@ -27,27 +39,27 @@ try:
     from improved_dual_personality_chatbot_fixed import ImprovedDualPersonalityChatbot
     chatbot_module = "improved_dual_personality_chatbot_fixed"
     CHATBOT_AVAILABLE = True
-    st.success("✅ Using fixed dual personality chatbot")
+    import_messages.append(("success", "✅ Using fixed dual personality chatbot"))
 except ImportError:
     try:
         from crypto_chatbot_fixed import ImprovedDualPersonalityChatbot
         chatbot_module = "crypto_chatbot_fixed"
         CHATBOT_AVAILABLE = True
-        st.success("✅ Using crypto chatbot fixed version")
+        import_messages.append(("success", "✅ Using crypto chatbot fixed version"))
     except ImportError:
         try:
             from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot
             chatbot_module = "improved_dual_personality_chatbot"
             CHATBOT_AVAILABLE = True
-            st.warning("⚠️ Using original chatbot - some features may be limited")
+            import_messages.append(("warning", "⚠️ Using original chatbot - some features may be limited"))
         except ImportError:
             try:
                 from crypto_chatbot import ImprovedDualPersonalityChatbot
                 chatbot_module = "crypto_chatbot"
                 CHATBOT_AVAILABLE = True
-                st.warning("⚠️ Using basic crypto chatbot")
+                import_messages.append(("warning", "⚠️ Using basic crypto chatbot"))
             except ImportError as e:
-                st.error(f"❌ Error importing chatbot: {e}")
+                import_messages.append(("error", f"❌ Error importing chatbot: {e}"))
                 CHATBOT_AVAILABLE = False
 
 # Utility functions
@@ -139,14 +151,6 @@ def safe_call_method(obj, method_name, *args, **kwargs):
         st.error(f"Error calling {method_name}: {e}")
         return None
 
-# Streamlit configuration
-st.set_page_config(
-    page_title="KoinToss - AI Crypto Assistant",
-    page_icon="🪙",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
 # Custom CSS for enhanced UI
 st.markdown("""
 <style>
@@ -196,7 +200,21 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+def display_import_messages():
+    """Display stored import status messages"""
+    if import_messages:
+        for msg_type, message in import_messages:
+            if msg_type == "success":
+                st.success(message)
+            elif msg_type == "warning":
+                st.warning(message)
+            elif msg_type == "error":
+                st.error(message)
+
 def main():
+    # Display import status messages first
+    display_import_messages()
+    
     # Header
     st.markdown("""
     <div class="main-header">
