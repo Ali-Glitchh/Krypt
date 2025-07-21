@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Simplified Dual-Personality Crypto Chatbot (Strip Error Fixed)
-- Fixed all strip() errors with proper type checking
-- Disabled autonomous training to prevent hanging
-- Core functionality maintained
+Enhanced Single-Personality Crypto Chatbot with MoonshotAI Integration
+- Removed Sub-Zero personality to eliminate issues
+- Focused on educational Normal personality only
+- MoonshotAI Kimi K2 integration for advanced conversations
 """
 
 import json
@@ -11,16 +11,58 @@ import random
 import re
 from typing import Dict, Optional, List
 from enhanced_normal_trainer import PureNormalTrainer
-from enhanced_subzero_trainer import EnhancedSubZeroTrainer as PureSubZeroTrainer
 from crypto_news_insights import CryptoNewsInsights
 from datetime import datetime
 
-class ImprovedDualPersonalityChatbot:
+# Import enhanced response generator
+try:
+    from enhanced_response_generator import EnhancedResponseGenerator
+    ENHANCED_GENERATOR_AVAILABLE = True
+except ImportError:
+    ENHANCED_GENERATOR_AVAILABLE = False
+    print("⚠️ Enhanced response generator not available")
+
+# Import advanced price news analyzer
+try:
+    from advanced_price_news_analyzer import AdvancedPriceNewsAnalyzer
+    PRICE_NEWS_ANALYZER_AVAILABLE = True
+except ImportError:
+    PRICE_NEWS_ANALYZER_AVAILABLE = False
+    print("⚠️ Advanced price news analyzer not available")
+
+# Import MoonshotAI integration
+try:
+    from moonshot_ai_integration import MoonshotAIIntegration
+    MOONSHOT_AI_AVAILABLE = True
+except ImportError:
+    MOONSHOT_AI_AVAILABLE = False
+    print("⚠️ MoonshotAI integration not available")
+
+class ImprovedSinglePersonalityChatbot:
     def __init__(self):
-        self.personality_mode = "normal"  # "normal" or "subzero"
+        self.personality_mode = "normal"  # Only normal mode now
         self.normal_trainer = None
-        self.subzero_trainer = None
         self.news_service = None
+        
+        # Initialize enhanced response generator
+        if ENHANCED_GENERATOR_AVAILABLE:
+            self.response_generator = EnhancedResponseGenerator()
+        else:
+            self.response_generator = None
+        
+        # Initialize advanced price news analyzer
+        if PRICE_NEWS_ANALYZER_AVAILABLE:
+            self.price_analyzer = AdvancedPriceNewsAnalyzer()
+        else:
+            self.price_analyzer = None
+        
+        # Initialize MoonshotAI integration
+        if MOONSHOT_AI_AVAILABLE:
+            moonshot_api_key = "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"
+            self.moonshot_ai = MoonshotAIIntegration(api_key=moonshot_api_key)
+            print("🌙 MoonshotAI Kimi K2 integration enabled!")
+        else:
+            self.moonshot_ai = None
         
         # Disable autonomous training for now
         self.autonomous_trainer = None
@@ -39,10 +81,10 @@ class ImprovedDualPersonalityChatbot:
         }
     
     def initialize_trainers(self):
-        """Initialize both personality trainers with optimal configurations"""
-        print("🤖 Initializing Simplified Dual-Personality Chatbot...")
+        """Initialize the normal personality trainer with optimal configuration"""
+        print("🤖 Initializing Enhanced Single-Personality Chatbot...")
         
-        # Enhanced normal personality
+        # Enhanced normal personality only
         try:
             self.normal_trainer = PureNormalTrainer()
             print("✅ Enhanced normal personality loaded and trained")
@@ -50,14 +92,7 @@ class ImprovedDualPersonalityChatbot:
             print(f"❌ Failed to load enhanced trainer: {e}")
             self.normal_trainer = None
         
-        # Pure Sub-Zero personality
-        try:
-            self.subzero_trainer = PureSubZeroTrainer()
-            print("✅ Pure Sub-Zero personality loaded and trained")
-        except Exception as e:
-            print(f"❌ Failed to load Sub-Zero personality: {e}")
-        
-        print("🎯 Simplified dual-personality chatbot ready!")
+        print("🎯 Enhanced single-personality chatbot ready!")
     
     def initialize_news_service(self):
         """Initialize the crypto news insights service"""
@@ -68,23 +103,50 @@ class ImprovedDualPersonalityChatbot:
             print(f"⚠️ News service failed to load: {e}")
             self.news_service = None
     
-    def switch_personality(self, mode: str = None) -> str:
-        """Switch between normal and Sub-Zero personality modes"""
-        if mode:
-            if mode.lower() in ['subzero', 'sub-zero', 'sub zero']:
-                self.personality_mode = "subzero"
-                return "🧊 Sub-Zero mode activated! Ready to freeze the crypto markets! ❄️"
-            elif mode.lower() in ['normal', 'crypto', 'default']:
-                self.personality_mode = "normal"
-                return "🤖 Normal mode activated! Ready to help with crypto questions! 📈"
+    def get_personality_info(self) -> str:
+        """Get information about the current personality mode"""
+        return "🎓 Educational Mode: I'm here to help you learn about cryptocurrency in a friendly, beginner-focused way!"
+    
+    def _should_use_moonshot(self, user_input: str) -> bool:
+        """Determine if MoonshotAI should be used for enhanced responses"""
+        if not self.moonshot_ai:
+            return False
         
-        # Toggle if no specific mode given
-        if self.personality_mode == "normal":
-            self.personality_mode = "subzero"
-            return "🧊 Sub-Zero mode activated! The Lin Kuei shall dominate the crypto realm! ❄️"
-        else:
-            self.personality_mode = "normal"
-            return "🤖 Normal mode activated! Back to friendly crypto assistance! 📈"
+        user_lower = user_input.lower()
+        
+        # Use MoonshotAI for complex queries, conversational questions, or specific crypto topics
+        moonshot_triggers = [
+            # Complex questions
+            'how do i', 'what is', 'can you explain', 'tell me about', 'help me understand',
+            'what are the', 'how does', 'why is', 'when should', 'which is better',
+            
+            # Conversational elements
+            'what do you think', 'in your opinion', 'recommend', 'advice', 'suggest',
+            'compare', 'difference between', 'pros and cons', 'best way',
+            
+            # Advanced crypto topics
+            'defi', 'yield farming', 'liquidity', 'smart contract', 'blockchain',
+            'consensus', 'mining', 'staking', 'validator', 'tokenomics',
+            'dao', 'governance', 'protocol', 'layer 2', 'scalability',
+            'security', 'audit', 'vulnerability', 'exploit', 'hack',
+            
+            # Market analysis
+            'market analysis', 'technical analysis', 'fundamental analysis',
+            'trend', 'prediction', 'forecast', 'outlook', 'sentiment',
+            
+            # Strategy and trading
+            'strategy', 'portfolio', 'investment', 'trading', 'risk management'
+        ]
+        
+        # Check for complex sentences (more than 6 words usually indicates complexity)
+        word_count = len(user_input.split())
+        has_complex_structure = word_count > 6
+        
+        # Check for trigger phrases
+        has_trigger = any(trigger in user_lower for trigger in moonshot_triggers)
+        
+        # Use MoonshotAI for complex or triggered queries
+        return has_complex_structure or has_trigger
     
     def get_crypto_news_context(self, user_input: str) -> str:
         """Get relevant crypto news context (Sub-Zero style)"""
@@ -132,56 +194,105 @@ class ImprovedDualPersonalityChatbot:
             user_input = str(user_input)
             
         if not user_input.strip():
-            # Use personality-appropriate prompts
-            if self.personality_mode == "subzero":
-                if self.subzero_trainer:
-                    prompt_response = self.subzero_trainer.get_response("hello")
-                    # Handle both dict and string responses
-                    if isinstance(prompt_response, dict):
-                        message = prompt_response.get('message', str(prompt_response))
-                    else:
-                        message = str(prompt_response)
-                    return {
-                        "message": message,
-                        "personality": self.personality_mode,
-                        "type": "greeting"
-                    }
-            else:
-                if self.normal_trainer:
-                    prompt_response = self.normal_trainer.find_best_response("hello how are you")
-                    # Handle both dict and string responses
-                    if isinstance(prompt_response, dict):
-                        message = prompt_response.get('message', str(prompt_response))
-                    else:
-                        message = str(prompt_response)
-                    return {
-                        "message": message,
-                        "personality": self.personality_mode,
-                        "type": "greeting"
-                    }
+            # Use friendly greeting
+            if self.normal_trainer:
+                prompt_response = self.normal_trainer.find_best_response("hello how are you")
+                # Handle both dict and string responses
+                if isinstance(prompt_response, dict):
+                    message = prompt_response.get('message', str(prompt_response))
+                else:
+                    message = str(prompt_response)
+                return {
+                    "message": message,
+                    "personality": self.personality_mode,
+                    "type": "greeting"
+                }
             
             return {
-                "message": "How can I help you today?",
+                "message": "Hello! How can I help you with cryptocurrency today? 📈",
                 "personality": self.personality_mode,
                 "type": "fallback"
             }
         
-        # Check for personality switch commands
+        # Check for personality info requests (no more switching)
         user_lower = user_input.lower()
-        if any(phrase in user_lower for phrase in ['switch to subzero', 'switch to sub-zero', 'activate subzero']):
-            switch_msg = self.switch_personality('subzero')
+        if any(phrase in user_lower for phrase in ['what mode', 'what personality', 'current mode', 'personality info']):
+            info_msg = self.get_personality_info()
             return {
-                "message": switch_msg,
+                "message": info_msg,
                 "personality": self.personality_mode,
-                "type": "personality_switch"
+                "type": "personality_info"
             }
-        elif any(phrase in user_lower for phrase in ['switch to normal', 'normal mode', 'activate normal']):
-            switch_msg = self.switch_personality('normal')
-            return {
-                "message": switch_msg,
-                "personality": self.personality_mode,
-                "type": "personality_switch"
-            }
+        
+        # PRIORITY 1: Try MoonshotAI enhanced response first (for complex queries)
+        if self.moonshot_ai and self._should_use_moonshot(user_input):
+            try:
+                # Prepare context for enhanced response
+                context = {}
+                
+                # Add price data context if it's a price query
+                if any(keyword in user_lower for keyword in ['price', 'cost', 'value', 'worth', 'trading at']):
+                    if self.price_analyzer:
+                        crypto_symbol = self.price_analyzer.extract_crypto_from_query(user_input)
+                        if crypto_symbol:
+                            price_data = self.price_analyzer.get_current_price_data(crypto_symbol)
+                            if price_data:
+                                context['price_data'] = price_data
+                                news_sentiment = self.price_analyzer.analyze_news_sentiment(crypto_symbol)
+                                context['news_sentiment'] = news_sentiment
+                
+                moonshot_response = self.moonshot_ai.get_enhanced_response(
+                    user_input, 
+                    context
+                )
+                
+                if moonshot_response:
+                    # Update learning stats
+                    self.learning_stats['total_conversations'] += 1
+                    self.learning_stats['successful_responses'] += 1
+                    self.learning_stats['accuracy_rate'] = (
+                        self.learning_stats['successful_responses'] / 
+                        self.learning_stats['total_conversations'] * 100
+                    )
+                    
+                    return {
+                        "message": moonshot_response['message'],
+                        "personality": self.personality_mode,
+                        "type": "moonshot_enhanced",
+                        "confidence": moonshot_response.get('confidence', 0.9),
+                        "model_used": moonshot_response.get('model_used', 'moonshot-v1-8k'),
+                        "tokens_used": moonshot_response.get('tokens_used', 0),
+                        "enhanced_with_context": moonshot_response.get('enhanced_with_context', False),
+                        "query_type": "moonshot_ai",
+                        "enhancements_applied": True
+                    }
+            except Exception as e:
+                print(f"⚠️ MoonshotAI error: {e}")
+                # Fall through to other response methods
+        
+        # PRIORITY 2: Check for price queries with news sentiment analysis
+        if self.price_analyzer and any(keyword in user_lower for keyword in ['price', 'cost', 'value', 'worth', 'trading at']):
+            try:
+                price_analysis = self.price_analyzer.generate_price_analysis_response(user_input, self.personality_mode)
+                if price_analysis:
+                    return {
+                        "message": price_analysis['message'],
+                        "personality": self.personality_mode,
+                        "type": "price_analysis_with_news",
+                        "confidence": 0.95,
+                        "price_data": price_analysis['price_data'],
+                        "news_sentiment": price_analysis['news_sentiment'],
+                        "crypto_symbol": price_analysis['crypto_symbol'],
+                        "sentiment_analysis": {
+                            "sentiment_label": price_analysis['news_sentiment']['overall_sentiment'],
+                            "compound": price_analysis['news_sentiment']['sentiment_score'],
+                            "crypto_sentiment": price_analysis['news_sentiment']['sentiment_score']
+                        },
+                        "query_type": "price_query",
+                        "enhancements_applied": True
+                    }
+            except Exception as e:
+                print(f"⚠️ Price analysis error: {e}")
         
         # Check for project-specific questions first
         project_response = self.get_project_info(user_input)
@@ -198,19 +309,8 @@ class ImprovedDualPersonalityChatbot:
         response_type = "unknown"
         confidence = 0.0
         
-        # Get response based on current personality
-        if self.personality_mode == "subzero" and self.subzero_trainer:
-            # Sub-Zero personality response
-            response_raw = self.subzero_trainer.get_response(user_input)
-            if isinstance(response_raw, dict):
-                response_message = response_raw.get('message', str(response_raw))
-                confidence = response_raw.get('confidence', 0.8)
-            else:
-                response_message = str(response_raw)
-                confidence = 0.8
-            response_type = "subzero_response"
-            
-        elif self.personality_mode == "normal" and self.normal_trainer:
+        # Get response using normal personality trainer
+        if self.normal_trainer:
             # Normal personality response
             response_raw = self.normal_trainer.get_response(user_input)
             if isinstance(response_raw, dict):
@@ -281,6 +381,17 @@ class ImprovedDualPersonalityChatbot:
                 self.learning_stats['total_conversations'] * 100
             )
         
+        # Enhance response if enhanced generator is available
+        if self.response_generator and response_message.strip():
+            try:
+                enhanced = self.response_generator.enhance_response(
+                    response_message, user_input, self.personality_mode
+                )
+                return enhanced
+            except Exception as e:
+                print(f"⚠️ Enhancement error: {e}")
+                # Fall back to original response
+        
         return {
             "message": response_message,
             "personality": self.personality_mode,
@@ -295,20 +406,12 @@ class ImprovedDualPersonalityChatbot:
         # KoinToss project questions
         kointoss_keywords = ['kointoss', 'koin toss', 'coin toss', 'this project', 'your project', 'about you']
         if any(keyword in user_lower for keyword in kointoss_keywords):
-            if self.personality_mode == "subzero":
-                return {
-                    "message": "🧊 KOINTOSS IS THE ULTIMATE CRYPTO WEAPON! A dual-personality AI assistant forged in the ice of digital warfare! I am your WARRIOR mode - providing COLD, calculated market insights and aggressive trading wisdom! The educational mode teaches, but I DOMINATE! Together we conquer the crypto realm with UNSTOPPABLE POWER! This project combines advanced AI, real-time market data, and pure DETERMINATION! ❄️⚔️💎",
-                    "personality": self.personality_mode,
-                    "type": "project_info",
-                    "confidence": 0.95
-                }
-            else:
-                return {
-                    "message": "KoinToss is an advanced AI-powered cryptocurrency assistant designed to help users navigate the complex world of digital assets. Our unique dual-personality system offers two distinct modes: 🎓 Educational Mode (that's me!) provides friendly, informative guidance perfect for learning, and ⚔️ Warrior Mode offers bold, aggressive market insights. The project integrates real-time market data, sentiment analysis, and continuous learning capabilities to deliver comprehensive crypto assistance. Whether you're a beginner or experienced trader, KoinToss adapts to your needs!",
-                    "personality": self.personality_mode,
-                    "type": "project_info",
-                    "confidence": 0.95
-                }
+            return {
+                "message": "KoinToss is an advanced AI-powered cryptocurrency assistant designed to help users navigate the complex world of digital assets. 🎓 I provide friendly, educational guidance perfect for learning about crypto, enhanced with MoonshotAI Kimi K2 for advanced conversations. The project integrates real-time market data, sentiment analysis, and continuous learning capabilities to deliver comprehensive crypto assistance. Whether you're a beginner or experienced trader, KoinToss is here to help you understand and succeed in the crypto world! 🚀📈",
+                "personality": self.personality_mode,
+                "type": "project_info",
+                "confidence": 0.95
+            }
         
         return None
 
@@ -430,22 +533,27 @@ class ImprovedDualPersonalityChatbot:
 # Test function
 def test_chatbot():
     """Test the chatbot to ensure it works"""
-    print("🧪 Testing Fixed Chatbot...")
+    print("🧪 Testing Enhanced Single-Personality Chatbot with MoonshotAI...")
     
-    bot = ImprovedDualPersonalityChatbot()
+    bot = ImprovedSinglePersonalityChatbot()
     
-    # Test normal mode
-    print("\n1. Testing normal mode...")
+    # Test basic functionality
+    print("\n1. Testing basic greeting...")
     response1 = bot.get_response("hi")
     print(f"Response: {response1}")
     
-    # Test subzero mode
-    print("\n2. Testing subzero mode...")
-    bot.switch_personality('subzero')
-    response2 = bot.get_response("hi")
-    print(f"Response: {response2}")
+    # Test complex query (should trigger MoonshotAI)
+    print("\n2. Testing complex query...")
+    response2 = bot.get_response("Explain how blockchain consensus mechanisms work")
+    print(f"Response Type: {response2.get('type', 'unknown')}")
+    print(f"Message: {response2.get('message', '')[:150]}...")
     
-    print("\n✅ Chatbot test completed!")
+    # Test project info
+    print("\n3. Testing project info...")
+    response3 = bot.get_response("What is KoinToss?")
+    print(f"Response: {response3.get('message', '')[:100]}...")
+    
+    print("\n✅ Single-personality chatbot test completed!")
 
 if __name__ == "__main__":
     test_chatbot()

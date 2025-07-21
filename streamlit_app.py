@@ -36,7 +36,7 @@ chatbot_module = None
 
 # Try importing different chatbot versions
 try:
-    from improved_dual_personality_chatbot import ImprovedDualPersonalityChatbot
+    from improved_dual_personality_chatbot import ImprovedSinglePersonalityChatbot
     chatbot_module = "improved_dual_personality_chatbot"
     CHATBOT_AVAILABLE = True
     import_messages.append(("success", "✅ Chatbot initialized using improved_dual_personality_chatbot"))
@@ -265,7 +265,7 @@ def main():
     if "chatbot" not in st.session_state and CHATBOT_AVAILABLE:
         with st.spinner("🤖 Initializing KoinToss AI..."):
             try:
-                st.session_state.chatbot = ImprovedDualPersonalityChatbot()
+                st.session_state.chatbot = ImprovedSinglePersonalityChatbot()
                 st.success(f"✅ Chatbot initialized using {chatbot_module}")
             except Exception as e:
                 st.error(f"Error initializing chatbot: {e}")
@@ -273,138 +273,52 @@ def main():
 
     # Sidebar
     with st.sidebar:
-        st.header("🎛️ Controls")
+        st.header("🎛️ KoinToss AI")
         
-        # Chatbot status
+        # AI Status
         if CHATBOT_AVAILABLE and "chatbot" in st.session_state and st.session_state.chatbot:
-            st.success("🤖 AI Assistant: Online")
+            # Single personality mode
+            st.success("🎓 Educational Mode Active")
+            if hasattr(st.session_state.chatbot, 'moonshot_ai') and st.session_state.chatbot.moonshot_ai:
+                st.info("🌙 Enhanced with MoonshotAI Kimi K2")
             
-            # Current personality indicator
-            current_personality = safe_get_attribute(st.session_state.chatbot, 'current_personality', 'normal')
-            personality_display = "🎓 Educational Mode" if current_personality == 'normal' else "⚔️ Warrior Mode"
+            # Personality info button
+            if st.button("ℹ️ About This Mode", use_container_width=True):
+                info_response = safe_call_method(st.session_state.chatbot, 'get_personality_info')
+                if info_response:
+                    st.info(info_response)
             
-            st.markdown(f"""
-            <div class="personality-indicator">
-                Current Mode: {personality_display}
-            </div>
-            """, unsafe_allow_html=True)
+            st.divider()
             
-            # Personality switch buttons
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("🎓 Educational", key="normal_mode"):
-                    if st.session_state.chatbot:
-                        response = safe_call_method(st.session_state.chatbot, 'switch_personality', 'normal')
-                        if response:
-                            st.success("Switched to Educational Mode")
-                            st.rerun()
-            
-            with col2:
-                if st.button("⚔️ Warrior", key="warrior_mode"):
-                    if st.session_state.chatbot:
-                        response = safe_call_method(st.session_state.chatbot, 'switch_personality', 'subzero')
-                        if response:
-                            st.success("Switched to Warrior Mode")
-                            st.rerun()
-            
-            # Learning stats (if available)
-            if hasattr(st.session_state.chatbot, 'get_learning_stats'):
-                try:
-                    stats = st.session_state.chatbot.get_learning_stats()
-                    if stats:
-                        st.write("**📊 Learning Progress**")
-                        st.json(stats)
-                except Exception as e:
-                    st.write("**📊 Learning Progress**")
-                    st.info("Learning stats will be available after training")
-            else:
-                st.write("**📊 Learning Progress**")
-                st.info("Advanced learning features available in enhanced version")
-            
-            # Add Market Overview to sidebar
-            st.header("💰 Market Overview")
-            
-            # Get crypto data for sidebar
-            with st.spinner("Loading..."):
-                crypto_data = get_crypto_data()
-                
-                if crypto_data:
-                    # Show status in sidebar
-                    if API_UTILS_AVAILABLE:
-                        st.success("📡 Real-time market data")
-                    else:
-                        st.info("📊 Sample data")
-                    
-                    # Display top 5 cryptos in sidebar format
-                    for crypto in crypto_data[:5]:
-                        try:
-                            name = crypto.get('name', 'Unknown')
-                            symbol = crypto.get('symbol', 'N/A')
-                            price = crypto.get('current_price', 0)
-                            change = crypto.get('price_change_percentage_24h', 0)
-                            
-                            # Format price based on value
-                            if price >= 1:
-                                price_str = f"${price:,.2f}"
-                            else:
-                                price_str = f"${price:.6f}"
-                            
-                            # Create metric display
-                            st.metric(
-                                label=f"{symbol}",
-                                value=price_str,
-                                delta=f"{change:+.2f}%"
-                            )
-                        except Exception:
-                            continue
-                else:
-                    st.warning("Market data unavailable")
-            
-        else:
-            st.error("🤖 AI Assistant: Offline")
-            st.write("Please check chatbot configuration")
-        
-        # Market data section
-        st.header("💰 Market Overview")
-        
-        with st.spinner("Loading market data..."):
+            # Simple market overview
+            st.subheader("💰 Market")
             crypto_data = get_crypto_data()
-            
             if crypto_data:
-                # Show market status
-                if API_UTILS_AVAILABLE:
-                    st.success("📡 Real-time market data")
-                else:
-                    st.info("📊 Showing sample market data (API unavailable)")
-                
-                # Display crypto data in columns for better layout
-                cols = st.columns(3)
-                for i, crypto in enumerate(crypto_data[:6]):  # Show top 6 in 2 rows
+                for crypto in crypto_data[:3]:
                     try:
-                        name = crypto.get('name', 'Unknown')
                         symbol = crypto.get('symbol', 'N/A')
                         price = crypto.get('current_price', 0)
                         change = crypto.get('price_change_percentage_24h', 0)
                         
+                        price_str = f"${price:,.0f}" if price >= 1 else f"${price:.4f}"
                         change_color = "🟢" if change > 0 else "🔴" if change < 0 else "⚪"
                         
-                        with cols[i % 3]:
-                            st.markdown(f"""
-                            <div class="metric-card">
-                                <strong>{name} ({symbol})</strong><br>
-                                <span style="font-size: 1.2em;">${price:.4f}</span><br>
-                                {change_color} {change:+.2f}%
-                            </div>
-                            """, unsafe_allow_html=True)
+                        st.write(f"{change_color} **{symbol}** {price_str} ({change:+.1f}%)")
                     except Exception:
                         continue
             else:
-                st.error("❌ Unable to load market data")
+                st.info("Loading market data...")
+            
+            st.divider()
+            
+            # Clear chat button
+            if st.button("🗑️ Clear Chat", use_container_width=True):
+                st.session_state.messages = []
+                st.rerun()
         
-        # Clear chat button
-        if st.button("🗑️ Clear Chat"):
-            st.session_state.messages = []
-            st.rerun()
+        else:
+            st.error("🤖 AI Offline")
+            st.caption("Please refresh the page")
 
     # Main chat interface
     st.header("💬 Chat with KoinToss AI")
@@ -435,19 +349,52 @@ def main():
                                 # Extract message from dict response
                                 message = response.get('message', str(response))
                                 personality = response.get('personality', 'unknown')
+                                sentiment_data = response.get('sentiment_analysis', {})
+                                query_type = response.get('query_type', 'general')
+                                enhanced = response.get('enhancements_applied', False)
+                                response_type = response.get('type', 'unknown')
+                                
+                                # Check for MoonshotAI enhanced responses
+                                is_moonshot = response_type == 'moonshot_enhanced'
+                                model_used = response.get('model_used', '')
+                                tokens_used = response.get('tokens_used', 0)
                                 
                                 # Add personality indicator
-                                if personality == 'subzero':
-                                    personality_icon = "⚔️ Warrior"
-                                elif personality == 'normal':
-                                    personality_icon = "🎓 Educational"
-                                else:
-                                    personality_icon = "🤖 AI"
+                                personality_icon = "🎓 Educational"
                                 
-                                # Display the clean message with personality indicator
-                                st.markdown(f"**{personality_icon}:** {message}")
+                                # Add MoonshotAI indicator for enhanced responses
+                                if is_moonshot:
+                                    personality_icon += " 🌙"
+                                
+                                # Display enhancement indicator if applicable
+                                enhancement_badge = ""
+                                if enhanced:
+                                    if sentiment_data:
+                                        sentiment_label = sentiment_data.get('sentiment_label', 'neutral')
+                                        if sentiment_label == 'bullish':
+                                            enhancement_badge = " 🚀"
+                                        elif sentiment_label == 'bearish':
+                                            enhancement_badge = " 📉"
+                                        else:
+                                            enhancement_badge = " 📊"
+                                
+                                # Display the clean message with enhancements
+                                display_message = f"**{personality_icon}{enhancement_badge}:** {message}"
+                                st.markdown(display_message)
+                                
+                                # Simple sentiment indicator (no sidebar clutter)
+                                if sentiment_data and enhanced:
+                                    sentiment_label = sentiment_data.get('sentiment_label', 'neutral')
+                                    if sentiment_label != 'neutral':
+                                        sentiment_emoji = "🚀" if sentiment_label == 'bullish' else "📉"
+                                        st.caption(f"{sentiment_emoji} {sentiment_label.title()} sentiment detected")
+                                
+                                # Show MoonshotAI model info for enhanced responses
+                                if is_moonshot and tokens_used > 0:
+                                    st.caption(f"🌙 Powered by {model_used} • {tokens_used} tokens used")
+                                
                                 # Add clean response to chat history
-                                st.session_state.messages.append({"role": "assistant", "content": f"**{personality_icon}:** {message}"})
+                                st.session_state.messages.append({"role": "assistant", "content": display_message})
                             else:
                                 # Handle string responses
                                 clean_response = str(response)
